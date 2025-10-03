@@ -52,3 +52,91 @@ bool operator!=(const vec2& l, const vec2& r) {
 bool operator!=(const vec3& l, const vec3& r) {
     return !(l == r);
 }
+
+float Dot(const vec2& l, const vec2& r) {
+    return l.x * r.x + l.y * r.y;
+}
+
+float Dot(const vec3& l, const vec3& r) {
+    return l.x * r.x + l.y * r.y + l.z * r.z;
+}
+
+float Magnitude(const vec2& v) {
+    return sqrtf(Dot(v, v));
+};
+
+float Magnitude(const vec3& v) {
+    return sqrtf(Dot(v, v));
+};
+
+float MagnitudeSq(const vec2& v) {
+    return Dot(v, v);
+}
+
+float MagnitudeSq(const vec3& v) {
+    return Dot(v, v);
+}
+
+float Distance(const vec3& p1, const vec3& p2) {
+    vec3 t = p1 - p2;
+    return Magnitude(t);
+}
+
+void Normalzie(vec2& v) {
+    v = v * (1.0f / Magnitude(v));
+};
+void Normalize(vec3& v) {
+    v = v * (1.0f / Magnitude(v));
+};
+
+vec2 Normalized(const vec2& v) {
+    return v * (1.0f / Magnitude(v));
+};
+
+vec3 Normalized(const vec3& v) {
+    return v * (1.0f / Magnitude(v));
+};
+
+vec3 Cross(const vec3& l, const vec3& r) {
+    return { l.y * r.z - l.z * r.y, l.z * r.x - l.x * r.z, l.x * r.y - l.y * r.x };
+}
+
+float Angle(const vec2& l, const vec2& r) {
+    float m = sqrtf(MagnitudeSq(l) * MagnitudeSq(r));
+    return acos(Dot(l, r) / m);
+};
+
+float Angle(const vec3& l, const vec3& r) {
+    float m = sqrtf(MagnitudeSq(l) * MagnitudeSq(r));
+    return acos(Dot(l, r) / m);
+}
+
+vec2 Project(const vec2& length, const vec2& direction) {
+    float dot = Dot(length, direction);
+    float magSq = MagnitudeSq(direction);
+    return direction * (dot / magSq);
+}
+
+vec3 Project(const vec3& length, const vec3& direction) {
+    float dot = Dot(length, direction);
+    float magSq = MagnitudeSq(direction);
+    return direction * (dot / magSq);
+}
+
+vec2 Perpendicular(const vec2& len, const vec2& dir) {
+    return len - Project(len, dir);
+}
+
+vec3 Perpendicular(const vec3& len, const vec3& dir) {
+    return len - Project(len, dir);
+}
+
+vec2 Reflection(const vec2& vec, const vec2& normal) {
+    float d = Dot(vec, normal);
+    return vec - normal * d * 2.0f;
+}
+
+vec3 Reflection(const vec3& vec, const vec3& normal) {
+    float d = Dot(vec, normal);
+    return vec - normal * d * 2.0f;
+}
