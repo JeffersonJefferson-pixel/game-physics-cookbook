@@ -159,4 +159,32 @@ mat4 Minor(const mat4& mat);
 mat4 Cofactor(const mat4& mat);
 float Determinant(const mat4& mat);
 
+mat2 Adjugate(const mat2& mat);
+mat3 Adjugate(const mat3& mat);
+mat4 Adjugate(const mat4& mat);
+
+mat2 Inverse(const mat2& mat);
+mat3 Inverse(const mat3& mat);
+mat4 Inverse(const mat4& mat);
+
+// get translation matrix given translation components.
+mat4 Translation(float x, float y, float z);
+// get translation matrix given translation vector.
+mat4 Translation(const vec3& pos);
+// get translation vector from transformation matrix.
+vec3 GetTranslation(const mat4& mat);
+
+mat4 Scale(float x, float y, float z);
+mat4 Scale(const vec3& vec);
+vec3 GetScale(const mat4& mat);
+
+mat4 Rotation(float pitch, float yaw, float roll);
+mat3 Rotation3x3(float pitch, float yaw, float roll);
+
+mat4 ZRotation(float angle);
+mat3 ZRotation3x3(float angle);
+mat4 XRotation(float angle);
+mat3 XRotation3x3(float angle);
+mat4 YRotation(float angle);
+mat3 YRotation3x2(float angle);
 #endif
