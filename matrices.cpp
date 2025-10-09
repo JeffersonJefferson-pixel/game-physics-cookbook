@@ -444,3 +444,53 @@ mat3 YRotation3x3(float angle) {
         sinf(angle), 0.0f, cosf(angle)
     );
 }
+
+mat4 AxisAngle(const vec3& axis, float angle) {
+    angle = DEG2RAD(angle);
+    float c = cosf(angle);
+    float s = sinf(angle);
+    float t = 1.0f - cosf(angle);
+
+    float x = axis.x;
+    float y = axis.y;
+    float z = axis.z;
+
+    // normalize if axis is not unit vector.
+    if (!CMP(MagnitudeSq(axis), 1.0f)) {
+        float inv_len = 1.0f / Magnitude(axis);
+        x *= inv_len;
+        y *= inv_len;
+        z *= inv_len;
+    }
+
+    return mat4(
+        t*(x*x) + c, t*x*y + s*z, t*x*z - s*y, 0.0f,
+        t*x*y - s*z, t*(y*y) + c, t*y*z + s*x, 0.0f,
+        t*x*z + s*y, t*y*z - s*x, t*(z*z) + c, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f
+    );
+}
+
+mat3 AxisAngle3x3(const vec3& axis, float angle) {
+    angle = DEG2RAD(angle);
+    float c = cosf(angle);
+    float s = sinf(angle);
+    float t = 1.0f - cosf(angle);
+
+    float x = axis.x;
+    float y = axis.y;
+    float z = axis.z;
+
+    if (!CMP(MagnitudeSq(axis), 1.0f)) {
+        float inv_len = 1.0f / Magnitude(axis);
+        x *= inv_len;
+        y *= inv_len;
+        z *= inv_len;
+    }
+
+    return mat3(
+        t*(x*x) + c, t*x*y + s*z, t*x*z - s*y,
+        t*x*y - s*z, t*(y*y) + c, t*y*z + s*x,
+        t*x*z + s*y, t*y*z -s*x, t*(z*z) +c
+    );
+}
