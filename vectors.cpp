@@ -21,6 +21,10 @@ vec3 operator-(const vec3& l, const vec3& r) {
     return { l.x - r.x, l.y - r.y, l.z - r.z };
 }
 
+vec3 operator-(const vec3& l, const vec3& r) {
+    return { l.x - r.x, l.y - r.y, l.z - r.z };
+}
+
 vec2 operator*(const vec2& l, const vec2& r) {
     return { l.x * r.x, l.y * r.y };
 }

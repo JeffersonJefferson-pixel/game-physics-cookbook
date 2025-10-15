@@ -190,4 +190,30 @@ mat3 YRotation3x3(float angle);
 
 mat4 AxisAngle(const vec3& axis, float angle);
 mat3 AxisAngle3x3(const vec3& axis, float angle);
+
+// vector-matrix multiplication
+
+vec3 MultiplyPoint(const vec3& vec, const mat4& mat);
+vec3 MultiplyVector(const vec3& vec, const mat4& mat);
+vec3 MultiplyVector(const vec3& vec, const mat3& mat);
+
+// tranformation matrix
+
+// get transform matrix with scale, euler angle rotation, and translation.
+mat4 Transform(const vec3& scale, const vec3& eulerRotation, const vec3& translate);
+// get transform matrix with scale, axis angle rotation, and translation.
+mat4 Transform(const vec3& scale, const vec3& rotationAxis, float rotationAngle, const vec3& translate);
+
+
+// view matrix
+
+// return view matrix of a camera given its position and target the camera is looking.
+mat4 LookAt(const vec3& psition, const vec3& target, const vec3& up);
+
+// Projection
+
+// return perspective projection matrix.
+mat4 Projection(float fov, float aspect, float zNear, float zFar);
+// return orthographic projeciton matrix given each side of projection volumes.
+mat4 Ortho(float left, float right, float bottom, float top, float zNear, float zFar);
 #endif
