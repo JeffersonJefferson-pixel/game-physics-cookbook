@@ -71,4 +71,11 @@ bool PointInOrientedRectangle(const Point2D& point, const OrientedRectangle& ree
 // line intersection
 
 bool LineCircle(const Line2D& line, const Circle & circle);
+
+// 2D collision
+
+// circle-circle collision
+bool CircleCircle(const Circle& c1, const Circle& c2);
+// circle-rectange collision
+bool CircleRactangle(const Circle& cirlce, const Rectangle2D& rect);
 #endif

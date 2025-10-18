@@ -6,6 +6,11 @@
 #define CMP(x, y) \
     (fabsf((x) - (y)) <= FLT_EPSILON * fmaxf(1.0f, fmaxf(fabsf(x), fabsf(y))))
 
+#define CLAMP(number, minimum, maximum) \
+    number = (number < minimum) ? minimum : ( \
+        (number > maximum) ? maximum : number \
+    )
+
 float Length(const Line2D& line) {
     return Magnitude(line.end - line.start);
 }
@@ -125,4 +130,26 @@ bool LineOrientedRectangle(const Line2D& line, const OrientedRectangle& rectangl
 
     Rectangle2D localRectangle(Point2D(), rectangle.halfExtents * 2.0f);
     return LineRectangle(localLine, localRectangle);
+}
+
+bool CircleCircle(const Circle& c1, const Circle& c2) {
+    // two circles intersect if the length of line between centers less than the sum of the radii.
+    // line between center of the two circles.
+    Line2D line(c1.position, c2.position);
+    float radiiSum = c1.radius + c2.radius;
+
+    return LengthSq(line) < radiiSum * radiiSum;
+}
+
+bool CircleRectangle(const Circle& circle, const Rectangle2D& rect) {
+    // find closest point on the rectangle to the center of the circle.
+    vec2 min = GetMin(rect);
+    vec2 max = GetMax(rect);
+    Point2D closestPoint = circle.position;
+    // clamp circle center to rectangle minimum and maximum bound.
+    CLAMP(closestPoint.x, min.x, max.x);
+    CLAMP(closestPoint.y, min.y, max.y);
+    // compare length of line between closest point and circle center to length of center radius.
+    Line2D line(circle.position, closestPoint);
+    return LengthSq(line) <= circle.radius * circle.radius; 
 }
