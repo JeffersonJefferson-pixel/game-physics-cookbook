@@ -77,5 +77,9 @@ bool LineCircle(const Line2D& line, const Circle & circle);
 // circle-circle collision
 bool CircleCircle(const Circle& c1, const Circle& c2);
 // circle-rectange collision
-bool CircleRactangle(const Circle& cirlce, const Rectangle2D& rect);
+bool CircleRectangle(const Circle& cirlce, const Rectangle2D& rect);
+// circle-oriented-rectangle collision
+bool CircleOrientedRectangle(const Circle& circle, const OrientedRectangle& rect);
+// rectangle-rectangle collision
+bool RectangleRectangle(const Rectangle2D& rect1, const Rectangle2D& rect2);
 #endif

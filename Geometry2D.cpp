@@ -6,11 +6,6 @@
 #define CMP(x, y) \
     (fabsf((x) - (y)) <= FLT_EPSILON * fmaxf(1.0f, fmaxf(fabsf(x), fabsf(y))))
 
-#define CLAMP(number, minimum, maximum) \
-    number = (number < minimum) ? minimum : ( \
-        (number > maximum) ? maximum : number \
-    )
-
 float Length(const Line2D& line) {
     return Magnitude(line.end - line.start);
 }
@@ -147,9 +142,42 @@ bool CircleRectangle(const Circle& circle, const Rectangle2D& rect) {
     vec2 max = GetMax(rect);
     Point2D closestPoint = circle.position;
     // clamp circle center to rectangle minimum and maximum bound.
-    CLAMP(closestPoint.x, min.x, max.x);
-    CLAMP(closestPoint.y, min.y, max.y);
+    closestPoint.x = (closestPoint.x < min.x) ? min.x :
+		(closestPoint.x > max.x) ? max.x : closestPoint.x;
+	closestPoint.y = (closestPoint.y < min.y) ? min.y :
+		(closestPoint.y > max.y) ? max.y : closestPoint.y;
     // compare length of line between closest point and circle center to length of center radius.
     Line2D line(circle.position, closestPoint);
     return LengthSq(line) <= circle.radius * circle.radius; 
+}
+
+bool CircleOrientedRectangle(const Circle& circle, const OrientedRectangle& rect) {
+    vec2 r = circle.position - rect.position;
+    // undo rotation
+    float theta = - DEG2RAD(rect.rotation);
+    float zRotation2x2[] = {
+        cosf(theta), sinf(theta),
+        -sinf(theta), cosf(theta)
+    };
+    Multiply(r.asArray, vec2(r.x, r.y).asArray, 1, 2, zRotation2x2, 2, 2);
+    // circle in local space of rectangle.
+    Circle localCircle(r + rect.halfExtents, circle.radius);
+    // non-oriented circle
+    Rectangle2D localRectangle(Point2D(), rect.halfExtents * 2.0f);
+
+    return CircleRectangle(localCircle, localRectangle);
+}
+
+bool RectangleRectangle(const Rectangle2D& rect1, const Rectangle2D& rect2) {
+    // get minimum and maximum points
+    vec2 aMin = GetMin(rect1);
+    vec2 aMax = GetMax(rect1);
+    vec2 bMin = GetMin(rect2);
+    vec2 bMax = GetMax(rect2);
+
+    // check overlap on x and y axis.
+    bool overX = (bMin.x <= aMax.x) && (aMin.x <= bMax.x);
+    bool overY = (bMin.y <= aMax.y) && (aMin.y <= bMax.y);
+
+    return overX && overY;
 }
