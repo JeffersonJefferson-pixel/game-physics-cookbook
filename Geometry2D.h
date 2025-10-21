@@ -82,4 +82,24 @@ bool CircleRectangle(const Circle& cirlce, const Rectangle2D& rect);
 bool CircleOrientedRectangle(const Circle& circle, const OrientedRectangle& rect);
 // rectangle-rectangle collision
 bool RectangleRectangle(const Rectangle2D& rect1, const Rectangle2D& rect2);
+
+
+// Separating axis theorem
+typedef struct Interval2D {
+    float min;
+    float max;
+} Interval2D;
+
+// return the interval of a rectangle given an axis.
+Interval2D GetInterval(const Rectangle2D& rect, const vec2& axis);
+// test if two intervals overlap on an axis.
+bool OverlapOnAxis(const Rectangle2D& rect1, const Rectangle2D& rect2, const vec2& axis);
+// rectangle rectangle collision test based on SAT
+bool RectangleRectangleSAT(const Rectangle2D& rect1, const Rectangle2D& rect2);
+// rectangle and oriented rectangle
+Interval2D GetInterval(const OrientedRectangle& rect, const vec2& axis);
+bool OverlapOnAxis(const Rectangle2D& rect1, const OrientedRectangle& rect2, const vec2& axis);
+bool RectangleOrientedRectangle(const Rectangle2D& rect1, const OrientedRectangle& rect2);
+// oriented-rectangle and oriented rectangle
+bool OrientedRectangleOrientedRectangle(const OrientedRectangle& r1, const OrientedRectangle& r2);
 #endif
