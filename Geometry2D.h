@@ -102,4 +102,16 @@ bool OverlapOnAxis(const Rectangle2D& rect1, const OrientedRectangle& rect2, con
 bool RectangleOrientedRectangle(const Rectangle2D& rect1, const OrientedRectangle& rect2);
 // oriented-rectangle and oriented rectangle
 bool OrientedRectangleOrientedRectangle(const OrientedRectangle& r1, const OrientedRectangle& r2);
+
+// 2d optimization
+
+// containing circle
+
+// return a bounding circle from a set of points
+Circle ContainingCircle(Point2D* pArray, int arrayCount);
+
+// containing rectangle
+
+// create a bounding rectangle from a set of points.
+Rectangle2D ContainingRectangle(Point2D* pointArray, int arrayCount);
 #endif

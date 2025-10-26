@@ -309,3 +309,46 @@ bool OrientedRectangleOrientedRectangle(const OrientedRectangle& r1, const Orien
 
     return RectangleOrientedRectangle(local1, local2);
 }
+
+Circle ContainingCircle(Point2D* pArray, int arrayCount) {
+    // center of point cloud.
+    Point2D center;
+    for (int i = 0; i < arrayCount; ++i) {
+        center = center + pArray[i];
+    }
+    center = center * (1.0f / (float)arrayCount);
+
+    // containing circle.
+    Circle result(center, 1.0f);
+    // radius is distance between center and the furthest point
+    result.radius = MagnitudeSq(center - pArray[0]);
+    for (int i = 1; i < arrayCount; ++i) {
+        float distance = MagnitudeSq(center - pArray[i]);
+        if (distance > result.radius) {
+            result.radius = distance;
+        }
+    }
+    result.radius = sqrtf(result.radius);
+
+    return result;
+}
+
+Rectangle2D ContainingRectangle(Point2D* pointArray, int arrayCount) {
+    // find minimum and maximum points.
+    vec2 min = pointArray[0];
+    vec2 max = pointArray[1];
+
+    for (int i = 1; i < arrayCount; ++i) {
+        min.x = pointArray[i].x < min.x ? 
+            pointArray[i].x : min.x;
+        min.y = pointArray[i].y < min.y ?
+            pointArray[i].y : min.y;
+        max.x = pointArray[i].x > max.x ?
+            pointArray[i].x : max.x;
+        max.y = pointArray[i].y > max.y ?
+            pointArray[i].y : max.y;
+    }
+
+    return FromMinMax(min, max);
+}
+
