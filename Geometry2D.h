@@ -55,63 +55,77 @@ typedef struct OrientedRectangle
     // create unit rectangle at origin with no rotation.
     inline OrientedRectangle() : halfExtents(1.0f, 1.0f), rotation(0.0f) {}
     // create rectangle given center point and half extents.
-    inline OrientedRectangle(const Point2D& p, const vec2& e) : position(p), halfExtents(e), rotation(0.0f) {}
+    inline OrientedRectangle(const Point2D &p, const vec2 &e) : position(p), halfExtents(e), rotation(0.0f) {}
     // create oriented rectangle given center point, half extents and rotation in degree.
-    inline OrientedRectangle(const Point2D& pos, const vec2& ext, float rot) : position(pos), halfExtents(ext), rotation(rot) {}
+    inline OrientedRectangle(const Point2D &pos, const vec2 &ext, float rot) : position(pos), halfExtents(ext), rotation(rot) {}
 } OrientedRectangle;
 
 // check if point is on a line.
-bool PointOnLine(const Point2D& point, const Line2D& line);
+bool PointOnLine(const Point2D &point, const Line2D &line);
 // check if point is in a circle.
-bool PointInCircle(const Point2D& point, const Circle& c);
+bool PointInCircle(const Point2D &point, const Circle &c);
 // check if point is in a rectangle.
-bool PointInRectangle(const Point2D& point, const Rectangle2D& rectangle);
-bool PointInOrientedRectangle(const Point2D& point, const OrientedRectangle& reectangle);
+bool PointInRectangle(const Point2D &point, const Rectangle2D &rectangle);
+bool PointInOrientedRectangle(const Point2D &point, const OrientedRectangle &reectangle);
 
 // line intersection
 
-bool LineCircle(const Line2D& line, const Circle & circle);
+bool LineCircle(const Line2D &line, const Circle &circle);
 
 // 2D collision
 
 // circle-circle collision
-bool CircleCircle(const Circle& c1, const Circle& c2);
+bool CircleCircle(const Circle &c1, const Circle &c2);
 // circle-rectange collision
-bool CircleRectangle(const Circle& cirlce, const Rectangle2D& rect);
+bool CircleRectangle(const Circle &cirlce, const Rectangle2D &rect);
 // circle-oriented-rectangle collision
-bool CircleOrientedRectangle(const Circle& circle, const OrientedRectangle& rect);
+bool CircleOrientedRectangle(const Circle &circle, const OrientedRectangle &rect);
 // rectangle-rectangle collision
-bool RectangleRectangle(const Rectangle2D& rect1, const Rectangle2D& rect2);
-
+bool RectangleRectangle(const Rectangle2D &rect1, const Rectangle2D &rect2);
 
 // Separating axis theorem
-typedef struct Interval2D {
+typedef struct Interval2D
+{
     float min;
     float max;
 } Interval2D;
 
 // return the interval of a rectangle given an axis.
-Interval2D GetInterval(const Rectangle2D& rect, const vec2& axis);
+Interval2D GetInterval(const Rectangle2D &rect, const vec2 &axis);
 // test if two intervals overlap on an axis.
-bool OverlapOnAxis(const Rectangle2D& rect1, const Rectangle2D& rect2, const vec2& axis);
+bool OverlapOnAxis(const Rectangle2D &rect1, const Rectangle2D &rect2, const vec2 &axis);
 // rectangle rectangle collision test based on SAT
-bool RectangleRectangleSAT(const Rectangle2D& rect1, const Rectangle2D& rect2);
+bool RectangleRectangleSAT(const Rectangle2D &rect1, const Rectangle2D &rect2);
 // rectangle and oriented rectangle
-Interval2D GetInterval(const OrientedRectangle& rect, const vec2& axis);
-bool OverlapOnAxis(const Rectangle2D& rect1, const OrientedRectangle& rect2, const vec2& axis);
-bool RectangleOrientedRectangle(const Rectangle2D& rect1, const OrientedRectangle& rect2);
+Interval2D GetInterval(const OrientedRectangle &rect, const vec2 &axis);
+bool OverlapOnAxis(const Rectangle2D &rect1, const OrientedRectangle &rect2, const vec2 &axis);
+bool RectangleOrientedRectangle(const Rectangle2D &rect1, const OrientedRectangle &rect2);
 // oriented-rectangle and oriented rectangle
-bool OrientedRectangleOrientedRectangle(const OrientedRectangle& r1, const OrientedRectangle& r2);
+bool OrientedRectangleOrientedRectangle(const OrientedRectangle &r1, const OrientedRectangle &r2);
 
 // 2d optimization
 
 // containing circle
 
 // return a bounding circle from a set of points
-Circle ContainingCircle(Point2D* pArray, int arrayCount);
+Circle ContainingCircle(Point2D *pArray, int arrayCount);
 
 // containing rectangle
 
 // create a bounding rectangle from a set of points.
-Rectangle2D ContainingRectangle(Point2D* pointArray, int arrayCount);
+Rectangle2D ContainingRectangle(Point2D *pointArray, int arrayCount);
+
+// complex shapes
+
+typedef struct BoundingShape
+{
+    int numCircles;
+    Circle *circles;
+    int numRectangles;
+    Rectangle2D *rectangles;
+
+    inline BoundingShape() : numCircles(0), circles(0), numRectangles(0), rectangles(0) {}
+};
+
+bool PointInShape(const BoundingShape& shape, const Point2D& point);
 #endif

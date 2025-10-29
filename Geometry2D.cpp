@@ -352,3 +352,17 @@ Rectangle2D ContainingRectangle(Point2D* pointArray, int arrayCount) {
     return FromMinMax(min, max);
 }
 
+bool PointInShape(const BoundingShape& shape, const Point2D& point) {
+    for (int i = 0; i < shape.numCircles; ++i) {
+        if (PointInCircle(point, shape.circles[i])) {
+            return true;
+        }
+    }
+    for (int i = 0; i < shape.numRectangles; ++i) {
+        if (PointInRectangle(point, shape.rectangles[i])) {
+            return true;
+        }
+    }
+    return false;
+}
+
