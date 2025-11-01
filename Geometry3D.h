@@ -101,4 +101,33 @@ typedef struct Triangle {
     inline Triangle() {}
     inline Triangle(const Point& p1, const Point& p2, const Point& p3) : a(p1), b(p2), c(p3) {}
 } Triangle;
+
+// 3d point tests
+
+// point and sphere
+
+bool PointInSphere(const Point& point, const Sphere& sphere);
+Point ClosestPoint(const Sphere& sphere, const Point& point);
+
+// point and AABB
+
+bool PointInAABB(const Point& point, const AABB& aabb);
+Point ClosestPoint(const AABB &aabb, const Point& point);
+
+// point and OBB
+bool PointInOBB(const Point& point, const OBB& obb);
+Point ClosestPoint(const OBB& obb, const Point& point);
+
+
+// point and plane
+bool PointOnPlane(const Point& point, const Plane& plane);
+Point ClosestPoint(const Plane& plane, const Point& point);
+
+// point and line
+bool PointOnLine(const Point& point, const Line& line);
+Point ClosestPoint(const Line& line, const Point& point);
+
+// point and ray
+bool PointOnRay(const Point& point, const Ray& ray);
+Point ClosestPoint(const Ray& ray, const Point& point);
 #endif
