@@ -130,4 +130,45 @@ Point ClosestPoint(const Line& line, const Point& point);
 // point and ray
 bool PointOnRay(const Point& point, const Ray& ray);
 Point ClosestPoint(const Ray& ray, const Point& point);
+
+// 3d shape intersection
+
+// sphere and sphere
+bool SphereSphere(const Sphere& s1, const Sphere& s2);
+
+// sphere and aabb
+bool SphereAABB(const Sphere& sphere, const AABB& aabb);
+
+// sphere and obb
+bool SphereOBB(const Sphere& sphere, const OBB& obb);
+
+// sphere and plane
+bool SpherePlane(const Sphere& sphere, const Plane& plane);
+
+// aabb and aabb
+bool AABBAABB(const AABB& aabb1, const AABB& aabb2);
+
+typedef struct Interval {
+    float min;
+    float max;
+} Interval;
+
+Interval GetInterval(const AABB& rect, const vec3& axis);
+Interval GetInterval(const OBB& rect, const vec3& axis);
+bool OverlapOnAxis(const AABB& aabb, const OBB& obb, const vec3& axis);
+bool AABBOBB(const AABB& aabb, const OBB& obb);
+
+// aabb and plane
+bool AABBPlane(const AABB& aabb, const Plane& plane);
+
+// obb and obb
+
+bool OverlapOnAxis(const OBB& obb1, const OBB& obb2, const vec3& axis);
+bool OBBOBB(const OBB& obb1, const OBB& obb2);
+
+// obb and plane
+bool OBBPlane(const OBB& obb, const Plane& plane);
+
+// plane and plane
+bool PlanePlane(const Plane& plane1, const Plane& plane2);
 #endif
