@@ -171,4 +171,18 @@ bool OBBPlane(const OBB& obb, const Plane& plane);
 
 // plane and plane
 bool PlanePlane(const Plane& plane1, const Plane& plane2);
+
+// 3D line intersection
+
+// ray and sphere
+float Raycast(const Sphere& sphere, const Ray& ray);
+
+// ray and aabb
+float Raycast(const AABB& aabb, const Ray& ray);
+
+// ray and oobb
+float Raycast(const OBB& obb, const Ray& ray);
+
+// ray and plane
+float Raycast(const Plane& plane, const Ray& ray);
 #endif

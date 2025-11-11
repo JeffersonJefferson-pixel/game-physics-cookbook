@@ -377,3 +377,139 @@ bool PlanePlane(const Plane& plane1, const Plane& plane2) {
 
     return !CMP(Dot(d, d), 0);
 }
+
+float Raycast(const Sphere& sphere, const Ray& ray) {
+    // vector from spehre to ray origin.
+    vec3 e = sphere.position - ray.origin;
+    float rSq = sphere.radius * sphere.radius;
+    float eSq = MagnitudeSq(e);
+    // project vector to ray direction.
+    float a = Dot(e, ray.direction);
+    // side of a triangle
+    float bSq = eSq - (a * a);
+    float f = sqrt(rSq - bSq);
+    // compare radius against the side
+    // no collision
+    if (rSq - (eSq - (a * a)) < 0.0f) {
+        return -1;
+    } else if (eSq < rSq) {
+        // ray inside sphere
+        return a + f;
+    }
+    return a - f;
+}
+
+float Raycast(const AABB& aabb, const Ray& ray) {
+    vec3 min = GetMin(aabb);
+    vec3 max = GetMax(aabb);
+
+    // find intersections against each of the tree slabs.
+    float t1 = (min.x - ray.origin.x) / ray.direction.x;
+    float t2 = (max.x - ray.origin.x) / ray.direction.x;
+    float t3 = (min.y - ray.origin.y) / ray.direction.y;
+    float t4 = (max.y - ray.origin.y) / ray.direction.y;
+    float t5 = (min.z - ray.origin.z) / ray.direction.z;
+    float t6 = (max.z - ray.origin.z) / ray.direction.z;
+    
+    // largest minimum
+    float tmin = fmaxf(fmaxf(fminf(t1, t2), fminf(t3, t4)), fminf(t5, t6));
+
+    // smallest maximum
+    float tmax = fminf(fminf(fmaxf(t1, t2), fmaxf(t3, t4)), fmaxf(t5, t6));
+
+    if (tmax < 0) {
+        // aabb behind ray.
+        return -1;
+    }
+    if (tmin > tmax) {
+        // ray does not intersect.
+        return -1;
+    }
+    if (tmin < 0.0f) {
+        // ray inside aabb
+        return tmax;
+    }
+    return tmin;
+}
+
+float Raycast(const OBB& obb, const Ray& ray) {
+    const float* o = obb.orientation.asArray;
+    const float* size = obb.size.asArray;
+    // obb axis
+    vec3 X(o[0], o[1], o[2]);
+    vec3 Y(o[3], o[4], o[5]);
+    vec3 Z(o[6], o[7], o[8]);
+    // vector from ray to obb
+    vec3 p = obb.position - ray.origin;
+    // project direction of ray onto axis of obb.
+    vec3 f(
+        Dot(X, ray.direction),
+        Dot(Y, ray.direction),
+        Dot(Z, ray.direction)
+    );
+    // project p onto obb axis.
+    vec3 e(
+        Dot(X, p),
+        Dot(Y, p),
+        Dot(Z, p)
+    );
+    // find tmin, tmax for each slab
+    float t[6] = { 0, 0, 0, 0, 0, 0 };
+    for (int i = 0; i < 3; ++i) {
+        if (CMP(f[i], 0)) {
+            // ray parallel
+            if (-e[i] - size[i] > 0 || -e[i] + size[i] < 0) {
+                // ray outside slab
+                return -1;
+            }
+            // avoid division by 0
+            f[i] = 0.00001;
+        }
+        // min
+        t[i * 2 + 0] = (e[i] + size[i]) /  f[i];
+        // max
+        t[i * 2 + 1] = (e[i] - size[i]) / f[i]; 
+    }
+    // largest min
+    float tmin = fmaxf(
+        fmaxf(
+            fminf(t[0], t[1]),
+            fminf(t[2], t[3])
+        ),
+        fminf(t[4], t[5])
+    );
+    // smallest max
+    float tmax = fminf(
+        fminf(
+            fmaxf(t[0], t[1]),
+            fmaxf(t[2], t[3])
+        ),
+        fmaxf(t[4], t[5])
+    );
+    if (tmax < 0) {
+        return -1.0f;
+    }
+    if (tmin > tmax) {
+        return -1.0f;
+    }
+    if (tmin < 0.0f) {
+        return tmax;
+    }
+    return tmin;
+}
+
+float Raycast(const Plane& plane, const Ray& ray) {
+    float nd = Dot(ray.direction, plane.normal);
+    float pn = Dot(ray.origin, plane.normal);
+    // ray and plane point normal point in the same direction
+    if (nd >= 0.0f) {
+        return -1;
+    }
+    // plane equation
+    float t = (plane.distance - pn) / nd;
+    if (t >= 0.0f) {
+        return t;
+    }
+    // negative t is not valid
+    return -1;
+}
