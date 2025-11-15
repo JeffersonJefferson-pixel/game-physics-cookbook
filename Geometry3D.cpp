@@ -513,3 +513,50 @@ float Raycast(const Plane& plane, const Ray& ray) {
     // negative t is not valid
     return -1;
 }
+
+bool Linetest(const Sphere& sphere, const Line& line) {
+    // find closest point between line and sphere
+    Point closest = ClosestPoint(line, sphere.position);
+    // distance between closest poinst ans sphere center
+    float distSq = MagnitudeSq(sphere.position - closest);
+    // compare against sphere radius
+    return distSq <= sphere.radius * sphere.radius;
+}
+
+bool Linetest(const AABB& aabb, const Line& line) {
+    // create ray out of the line.
+    Ray ray;
+    ray.origin = line.start;
+    ray.direction = Normalized(line.end - line.start);
+    // use ray cast of aabb and ray
+    float t = Raycast(aabb, ray);
+
+    return t >= 0 && t * t <= LengthSq(line);
+}
+
+bool Linetest(const OBB& obb, const Line& line) {
+    // create ray from line.
+    Ray ray;
+    ray.origin = line.start;
+    ray.direction = Normalized(line.end - line.start);
+    // use raycast of obb and ray
+    float t = Raycast(obb, ray);
+    // check t is within line segment.
+    return t >= 0 && t * t <= LengthSq(line);
+}
+
+bool Linetest(const Plane& plane, const Line& line) {
+    vec3 ab = line.end - line.start;
+
+    float nA = Dot(plane.normal, line.start);
+    float nAB = Dot(plane.normal, ab);
+
+    // line and plane are parallel
+    if (CMP(nAB, 0)) {
+        return false;
+    }
+
+    // line segment intersect when it satisfies the plane equation.
+    float t = (plane.distance - nA) / nAB;
+    return t >= 0.0f && t <= 1.0f;
+}

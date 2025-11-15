@@ -185,4 +185,16 @@ float Raycast(const OBB& obb, const Ray& ray);
 
 // ray and plane
 float Raycast(const Plane& plane, const Ray& ray);
+
+// line and sphere
+bool Linetest(const Sphere& sphere, const Line& line);
+
+// line and aabb
+bool Linetest(const AABB& aabb, const Line& line);
+
+// line and obb
+bool Linetest(const OBB& obb, const Line& line);
+
+// line and plane
+bool Linetest(const Plane& plane, const Line& line);
 #endif
