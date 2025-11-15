@@ -5,68 +5,81 @@
 #define CMP(x, y) \
     (fabsf((x) - (y)) <= FLT_EPSILON * fmaxf(1.0f, fmaxf(fabsf(x), fabsf(y))))
 
-float Length(const Line& line) {
+float Length(const Line &line)
+{
     return Magnitude(line.start - line.end);
 }
 
-float LengthSq(const Line& line) {
+float LengthSq(const Line &line)
+{
     return MagnitudeSq(line.start - line.end);
 }
 
-Ray FromPoints(const Point& from, const Point& to) {
+Ray FromPoints(const Point &from, const Point &to)
+{
     return Ray(from, Normalized(to - from));
 }
 
-vec3 GetMin(const AABB& aabb) {
+vec3 GetMin(const AABB &aabb)
+{
     vec3 p1 = aabb.position + aabb.size;
     vec3 p2 = aabb.position - aabb.size;
 
     return vec3(fminf(p1.x, p2.x), fminf(p1.y, p2.y), fminf(p1.z, p2.z));
 }
 
-vec3 GetMax(const AABB& aabb) {
+vec3 GetMax(const AABB &aabb)
+{
     vec3 p1 = aabb.position + aabb.size;
     vec3 p2 = aabb.position - aabb.size;
 
-    return  vec3(fmaxf(p1.x, p2.x), fmaxf(p1.y, p2.y), fmaxf(p1.z, p2.z));
+    return vec3(fmaxf(p1.x, p2.x), fmaxf(p1.y, p2.y), fmaxf(p1.z, p2.z));
 }
 
-AABB FromMinMax(const vec3& min, const vec3& max) {
+AABB FromMinMax(const vec3 &min, const vec3 &max)
+{
     return AABB((min + max) * 0.5, (max - min) * 0.5f);
 }
 
-float PlaneEquation(const Point& point, const Plane& plane) {
+float PlaneEquation(const Point &point, const Plane &plane)
+{
     return Dot(point, plane.normal) - plane.distance;
 }
 
-bool PointInSphere(const Point& point, const Sphere& sphere) {
+bool PointInSphere(const Point &point, const Sphere &sphere)
+{
     // distance between point and sphere center
     float magSq = MagnitudeSq(point - sphere.position);
     float radSq = sphere.radius * sphere.radius;
     return magSq < radSq;
 }
 
-Point ClosestPoint(const Sphere& sphere, const Point& point) {
+Point ClosestPoint(const Sphere &sphere, const Point &point)
+{
     vec3 sphereToPoint = point - sphere.position;
     Normalize(sphereToPoint);
     sphereToPoint = sphereToPoint * sphere.radius;
     return sphere.position + sphereToPoint;
-} 
+}
 
-bool PointInAABB(const Point& point, const AABB& aabb) {
+bool PointInAABB(const Point &point, const AABB &aabb)
+{
     // compare with minimum and maximum point of aabb component-wise.
     Point min = GetMin(aabb);
     Point max = GetMax(aabb);
-    if (point.x < min.x || point.y < min.y || point.z < min.z) {
+    if (point.x < min.x || point.y < min.y || point.z < min.z)
+    {
         return false;
     }
-    if (point.x > max.x || point.y > max.y || point.z > max.z) {
+    if (point.x > max.x || point.y > max.y || point.z > max.z)
+    {
         return false;
     }
     return true;
 }
 
-Point ClosestPoint(const AABB& aabb, const Point& point) {
+Point ClosestPoint(const AABB &aabb, const Point &point)
+{
     // clamp closest point to minimum and maximum point of aabb.
     Point result = point;
     Point min = GetMin(aabb);
@@ -82,17 +95,21 @@ Point ClosestPoint(const AABB& aabb, const Point& point) {
     return result;
 }
 
-bool PointInOBB(const Point& point, const OBB& obb) {
+bool PointInOBB(const Point &point, const OBB &obb)
+{
     vec3 dir = point - obb.position;
     // project point to local axes of the box.
-    for (int i = 0; i < 3; ++i) {
-        const float* orientation = &obb.orientation.asArray[i * 3];
+    for (int i = 0; i < 3; ++i)
+    {
+        const float *orientation = &obb.orientation.asArray[i * 3];
         vec3 axis(orientation[0], orientation[1], orientation[2]);
         float distance = Dot(dir, axis);
-        if (distance > obb.size.asArray[i]) {
+        if (distance > obb.size.asArray[i])
+        {
             return false;
         }
-        if (distance < -obb.size.asArray[i]) {
+        if (distance < -obb.size.asArray[i])
+        {
             return false;
         }
     }
@@ -100,19 +117,23 @@ bool PointInOBB(const Point& point, const OBB& obb) {
     return true;
 }
 
-Point ClosestPoint(const OBB& obb, const Point& point) {
+Point ClosestPoint(const OBB &obb, const Point &point)
+{
     Point result = obb.position;
     vec3 dir = point - obb.position;
     // project
-    for (int i = 0; i < 3; ++i) {
-        const float* orientation = &obb.orientation.asArray[i * 3];
+    for (int i = 0; i < 3; ++i)
+    {
+        const float *orientation = &obb.orientation.asArray[i * 3];
         vec3 axis(orientation[0], orientation[1], orientation[2]);
         float distance = Dot(dir, axis);
         // clamp
-        if (distance > obb.size.asArray[i]) {
+        if (distance > obb.size.asArray[i])
+        {
             distance = obb.size.asArray[i];
         }
-        if (distance < -obb.size.asArray[i]) {
+        if (distance < -obb.size.asArray[i])
+        {
             distance = -obb.size.asArray[i];
         }
         // move along axis by clamped distance
@@ -122,11 +143,13 @@ Point ClosestPoint(const OBB& obb, const Point& point) {
     return result;
 }
 
-bool PointOnPlane(const Point& point, const Plane& plane) {
+bool PointOnPlane(const Point &point, const Plane &plane)
+{
     return CMP(Dot(point, plane.normal) - plane.distance, 0.0f);
 }
 
-Point ClosestPoint(const Plane& plane, const Point& point) {
+Point ClosestPoint(const Plane &plane, const Point &point)
+{
     float dot = Dot(plane.normal, point);
     // distance from point to plane
     float distance = dot - plane.distance;
@@ -134,7 +157,8 @@ Point ClosestPoint(const Plane& plane, const Point& point) {
     return point - plane.normal * distance;
 }
 
-Point ClosestPoint(const Line& line, const Point& point) {
+Point ClosestPoint(const Line &line, const Point &point)
+{
     // project point on to line
     vec3 lVec = line.end - line.start;
     float t = Dot(point - line.start, lVec) / Dot(lVec, lVec);
@@ -145,15 +169,18 @@ Point ClosestPoint(const Line& line, const Point& point) {
     return line.start + lVec * t;
 }
 
-bool PointOnLine(const Point& point, const Line& line) {
+bool PointOnLine(const Point &point, const Line &line)
+{
     // find closest point on line and check if it is actually the point by comparing distance.
     Point closest = ClosestPoint(line, point);
     float distanceSq = MagnitudeSq(closest - point);
     return CMP(distanceSq, 0.0f);
 }
 
-bool PointOnRay(const Point& point, const Ray& ray) {
-    if (point == ray.origin) {
+bool PointOnRay(const Point &point, const Ray &ray)
+{
+    if (point == ray.origin)
+    {
         return true;
     }
     vec3 norm = point - ray.origin;
@@ -162,21 +189,24 @@ bool PointOnRay(const Point& point, const Ray& ray) {
     return CMP(diff, 1.0f);
 }
 
-Point ClosestPoint(const Ray& ray, const Point& point) {
+Point ClosestPoint(const Ray &ray, const Point &point)
+{
     float t = Dot(point - ray.origin, ray.direction);
     t = fmaxf(t, 0.0f);
     return ray.origin + ray.direction * t;
 }
 
-bool SphereSphere(const Sphere& s1, const Sphere& s2) {
+bool SphereSphere(const Sphere &s1, const Sphere &s2)
+{
     // compare distance between sphere center and sum of its radius.
     float radiiSum = s1.radius + s2.radius;
     float sqDistance = Magnitude(s1.position - s2.position);
-    
+
     return sqDistance < radiiSum * radiiSum;
 }
 
-bool SphereAABB(const Sphere& sphere, const AABB& aabb) {
+bool SphereAABB(const Sphere &sphere, const AABB &aabb)
+{
     // find closest point on AABB to the sphere
     Point closestPoint = ClosestPoint(aabb, sphere.position);
     // compare distance between sphere to the point and the sphere radius
@@ -185,21 +215,24 @@ bool SphereAABB(const Sphere& sphere, const AABB& aabb) {
     return distSq < radiusSq;
 }
 
-bool SphereOBB(const Sphere& sphere, const OBB& obb) {
+bool SphereOBB(const Sphere &sphere, const OBB &obb)
+{
     Point closestPoint = ClosestPoint(obb, sphere.position);
     float distSq = MagnitudeSq(sphere.position - closestPoint);
     float radiusSq = sphere.radius * sphere.radius;
     return distSq < radiusSq;
 }
 
-bool SpherePlane(const Sphere& s, const Plane& p) {
+bool SpherePlane(const Sphere &s, const Plane &p)
+{
     Point closestPoint = ClosestPoint(p, s.position);
     float distSq = MagnitudeSq(s.position - closestPoint);
     float radiusSq = s.radius * s.radius;
     return distSq < radiusSq;
 }
 
-bool AABBAABB(const AABB& aabb1, const AABB& aabb2) {
+bool AABBAABB(const AABB &aabb1, const AABB &aabb2)
+{
     // interval test on each of the axes
     Point aMin = GetMin(aabb1);
     Point aMax = GetMax(aabb2);
@@ -207,11 +240,12 @@ bool AABBAABB(const AABB& aabb1, const AABB& aabb2) {
     Point bMax = GetMax(aabb2);
 
     return (aMin.x < bMax.x && aMax.x > bMin.x) &&
-        (aMin.y < bMax.y && aMax.y > bMin.y) && 
-        (aMin.z < bMax.z && aMax.z > bMin.z);
+           (aMin.y < bMax.y && aMax.y > bMin.y) &&
+           (aMin.z < bMax.z && aMax.z > bMin.z);
 }
 
-Interval GetInterval(const AABB& aabb, const vec3& axis) {
+Interval GetInterval(const AABB &aabb, const vec3 &axis)
+{
     vec3 i = GetMin(aabb);
     vec3 a = GetMax(aabb);
     // eight vertices of aabb
@@ -223,12 +257,12 @@ Interval GetInterval(const AABB& aabb, const vec3& axis) {
         vec3(a.x, a.y, a.z),
         vec3(a.x, a.y, i.z),
         vec3(a.x, i.y, a.z),
-        vec3(a.x, i.y, i.z)
-    };
+        vec3(a.x, i.y, i.z)};
     // project vertex onto axis and find min/max.
     Interval result;
     result.min = result.max = Dot(axis, vertex[0]);
-    for (int i = 1; i < 8; ++i) {
+    for (int i = 1; i < 8; ++i)
+    {
         float projection = Dot(axis, vertex[i]);
         result.min = projection < result.min ? projection : result.min;
         result.max = projection > result.max ? projection : result.max;
@@ -236,32 +270,33 @@ Interval GetInterval(const AABB& aabb, const vec3& axis) {
     return result;
 }
 
-Interval GetInterval(const OBB& obb, const vec3& axis) {
+Interval GetInterval(const OBB &obb, const vec3 &axis)
+{
     // center
     vec3 c = obb.position;
     // extents
     vec3 e = obb.size;
     // axis
-    const float* o = obb.orientation.asArray;
+    const float *o = obb.orientation.asArray;
     vec3 a[] = {
         vec3(o[0], o[1], o[2]),
         vec3(o[3], o[4], o[5]),
-        vec3(o[6], o[7], o[8])
-    };
+        vec3(o[6], o[7], o[8])};
     // vertex
     vec3 vertex[8];
-    vertex[0] = c + a[0]*e[0] + a[1]*e[1] + a[2]*e[2];
-    vertex[1] = c - a[0]*e[0] + a[1]*e[1] + a[2]*e[2];
-    vertex[2] = c + a[0]*e[0] - a[1]*e[1] + a[2]*e[2];
-    vertex[3] = c + a[0]*e[0] + a[1]*e[1] - a[2]*e[2];
-    vertex[4] = c - a[0]*e[0] - a[1]*e[1] - a[2]*e[2];
-    vertex[5] = c + a[0]*e[0] - a[1]*e[1] - a[2]*e[2];
-    vertex[6] = c - a[0]*e[0] + a[1]*e[1] - a[2]*e[2];
-    vertex[7] = c - a[0]*e[0] - a[1]*e[1] + a[2]*e[2];
+    vertex[0] = c + a[0] * e[0] + a[1] * e[1] + a[2] * e[2];
+    vertex[1] = c - a[0] * e[0] + a[1] * e[1] + a[2] * e[2];
+    vertex[2] = c + a[0] * e[0] - a[1] * e[1] + a[2] * e[2];
+    vertex[3] = c + a[0] * e[0] + a[1] * e[1] - a[2] * e[2];
+    vertex[4] = c - a[0] * e[0] - a[1] * e[1] - a[2] * e[2];
+    vertex[5] = c + a[0] * e[0] - a[1] * e[1] - a[2] * e[2];
+    vertex[6] = c - a[0] * e[0] + a[1] * e[1] - a[2] * e[2];
+    vertex[7] = c - a[0] * e[0] - a[1] * e[1] + a[2] * e[2];
     // project onto axis and get min/max.
     Interval result;
     result.min = result.max = Dot(axis, vertex[0]);
-    for (int i = 1; i < 8; ++i) {
+    for (int i = 1; i < 8; ++i)
+    {
         float projection = Dot(axis, vertex[i]);
         result.min = projection < result.min ? projection : result.min;
         result.max = projection > result.max ? projection : result.max;
@@ -270,14 +305,16 @@ Interval GetInterval(const OBB& obb, const vec3& axis) {
     return result;
 }
 
-bool OverlapOnAxis(const AABB& aabb, const OBB& obb, const vec3& axis) {
+bool OverlapOnAxis(const AABB &aabb, const OBB &obb, const vec3 &axis)
+{
     Interval a = GetInterval(aabb, axis);
     Interval b = GetInterval(obb, axis);
     return b.min <= a.max && a.min <= b.max;
 }
 
-bool AABBOBB(const AABB& aabb, const OBB& obb) {
-    const float* o = obb.orientation.asArray;
+bool AABBOBB(const AABB &aabb, const OBB &obb)
+{
+    const float *o = obb.orientation.asArray;
 
     // axis of seperation.
     vec3 test[15] = {
@@ -288,17 +325,19 @@ bool AABBOBB(const AABB& aabb, const OBB& obb) {
         // obb axis
         vec3(o[0], o[1], o[2]),
         vec3(o[3], o[4], o[5]),
-        vec3(o[6], o[7], o[8])
-    };
+        vec3(o[6], o[7], o[8])};
     // axis of separation by taking cross product between aabb and obb axis.
-    for (int i = 0; i < 3; ++i) {
-        test[6 + i*3 + 0] = Cross(test[i], test[0]);
-        test[6 + i*3 + 1] = Cross(test[i], test[1]);
-        test[6 + i*3 + 2] = Cross(test[i], test[2]);
+    for (int i = 0; i < 3; ++i)
+    {
+        test[6 + i * 3 + 0] = Cross(test[i], test[0]);
+        test[6 + i * 3 + 1] = Cross(test[i], test[1]);
+        test[6 + i * 3 + 2] = Cross(test[i], test[2]);
     }
     // check all axis of seperation for overlap.
-    for (int i = 0; i < 15; ++i) {
-        if (!OverlapOnAxis(aabb, obb, test[i])) {
+    for (int i = 0; i < 15; ++i)
+    {
+        if (!OverlapOnAxis(aabb, obb, test[i]))
+        {
             return false;
         }
     }
@@ -306,11 +345,12 @@ bool AABBOBB(const AABB& aabb, const OBB& obb) {
     return true;
 }
 
-bool AABBPlane(const AABB& aabb, const Plane& plane) {
+bool AABBPlane(const AABB &aabb, const Plane &plane)
+{
     // projet half extents of AABB onto the plane normal.
-    float pLen = aabb.size.x  * fabsf(plane.normal.x) +
-        aabb.size.y * fabsf(plane.normal.y) +
-        aabb.size.z * fabsf(plane.normal.z);
+    float pLen = aabb.size.x * fabsf(plane.normal.x) +
+                 aabb.size.y * fabsf(plane.normal.y) +
+                 aabb.size.z * fabsf(plane.normal.z);
     // distance from aabb to plane.
     float dot = Dot(plane.normal, aabb.position);
     float dist = dot - plane.distance;
@@ -318,15 +358,17 @@ bool AABBPlane(const AABB& aabb, const Plane& plane) {
     return fabsf(dist) < pLen;
 }
 
-bool OverlapOnAxis(const OBB& obb1, const OBB& obb2, const vec3& axis) {
+bool OverlapOnAxis(const OBB &obb1, const OBB &obb2, const vec3 &axis)
+{
     Interval a = GetInterval(obb1, axis);
     Interval b = GetInterval(obb2, axis);
     return b.min <= a.max && a.min <= b.max;
 }
 
-bool OBBOBB(const OBB& obb1, const OBB& obb2) {
-    const float* o1 = obb1.orientation.asArray;
-    const float* o2 = obb2.orientation.asArray;
+bool OBBOBB(const OBB &obb1, const OBB &obb2)
+{
+    const float *o1 = obb1.orientation.asArray;
+    const float *o2 = obb2.orientation.asArray;
     // axis of potential separation
     vec3 test[15] = {
         vec3(o1[0], o1[1], o1[2]),
@@ -337,48 +379,54 @@ bool OBBOBB(const OBB& obb1, const OBB& obb2) {
         vec3(o2[6], o2[7], o2[8]),
     };
     // cross product
-    for (int i = 0; i < 3; ++i) {
-        test[6 + i*3 + 0] = Cross(test[i], test[0]);
-        test[6 + i*3 + 1] = Cross(test[i], test[1]);
-        test[6 + i*3 + 2] = Cross(test[i], test[2]);
+    for (int i = 0; i < 3; ++i)
+    {
+        test[6 + i * 3 + 0] = Cross(test[i], test[0]);
+        test[6 + i * 3 + 1] = Cross(test[i], test[1]);
+        test[6 + i * 3 + 2] = Cross(test[i], test[2]);
     }
     // check overlap on each axis
-    
-    for (int i = 0; i < 15; ++i) {
-        if (!OverlapOnAxis(obb1, obb2, test[i])) {
+
+    for (int i = 0; i < 15; ++i)
+    {
+        if (!OverlapOnAxis(obb1, obb2, test[i]))
+        {
             return false;
         }
     }
 
-    return true; 
+    return true;
 }
 
-bool OBBPlane(const OBB& obb, const Plane& plane) {
+bool OBBPlane(const OBB &obb, const Plane &plane)
+{
     // project half extents of obb onto the plane normal.
-    const float* o = obb.orientation.asArray;
+    const float *o = obb.orientation.asArray;
     vec3 rot[] = {
         vec3(o[0], o[1], o[2]),
         vec3(o[3], o[4], o[5]),
         vec3(o[6], o[7], o[8]),
     };
     vec3 normal = plane.normal;
-    float pLen = obb.size.x * fabsf(Dot(normal, rot[0])) + 
-        obb.size.y * fabsf(Dot(normal, rot[1])) + 
-        obb.size.z * fabsf(Dot(normal, rot[2]));
+    float pLen = obb.size.x * fabsf(Dot(normal, rot[0])) +
+                 obb.size.y * fabsf(Dot(normal, rot[1])) +
+                 obb.size.z * fabsf(Dot(normal, rot[2]));
     // distance between obb and plane
     float dot = Dot(plane.normal, obb.position);
     float dist = dot - plane.distance;
     return fabsf(dist) <= pLen;
 }
 
-bool PlanePlane(const Plane& plane1, const Plane& plane2) {
+bool PlanePlane(const Plane &plane1, const Plane &plane2)
+{
     // check if plane normals are parallel.
     vec3 d = Cross(plane1.normal, plane2.normal);
 
     return !CMP(Dot(d, d), 0);
 }
 
-float Raycast(const Sphere& sphere, const Ray& ray) {
+float Raycast(const Sphere &sphere, const Ray &ray)
+{
     // vector from spehre to ray origin.
     vec3 e = sphere.position - ray.origin;
     float rSq = sphere.radius * sphere.radius;
@@ -390,16 +438,20 @@ float Raycast(const Sphere& sphere, const Ray& ray) {
     float f = sqrt(rSq - bSq);
     // compare radius against the side
     // no collision
-    if (rSq - (eSq - (a * a)) < 0.0f) {
+    if (rSq - (eSq - (a * a)) < 0.0f)
+    {
         return -1;
-    } else if (eSq < rSq) {
+    }
+    else if (eSq < rSq)
+    {
         // ray inside sphere
         return a + f;
     }
     return a - f;
 }
 
-float Raycast(const AABB& aabb, const Ray& ray) {
+float Raycast(const AABB &aabb, const Ray &ray)
+{
     vec3 min = GetMin(aabb);
     vec3 max = GetMax(aabb);
 
@@ -410,31 +462,35 @@ float Raycast(const AABB& aabb, const Ray& ray) {
     float t4 = (max.y - ray.origin.y) / ray.direction.y;
     float t5 = (min.z - ray.origin.z) / ray.direction.z;
     float t6 = (max.z - ray.origin.z) / ray.direction.z;
-    
+
     // largest minimum
     float tmin = fmaxf(fmaxf(fminf(t1, t2), fminf(t3, t4)), fminf(t5, t6));
 
     // smallest maximum
     float tmax = fminf(fminf(fmaxf(t1, t2), fmaxf(t3, t4)), fmaxf(t5, t6));
 
-    if (tmax < 0) {
+    if (tmax < 0)
+    {
         // aabb behind ray.
         return -1;
     }
-    if (tmin > tmax) {
+    if (tmin > tmax)
+    {
         // ray does not intersect.
         return -1;
     }
-    if (tmin < 0.0f) {
+    if (tmin < 0.0f)
+    {
         // ray inside aabb
         return tmax;
     }
     return tmin;
 }
 
-float Raycast(const OBB& obb, const Ray& ray) {
-    const float* o = obb.orientation.asArray;
-    const float* size = obb.size.asArray;
+float Raycast(const OBB &obb, const Ray &ray)
+{
+    const float *o = obb.orientation.asArray;
+    const float *size = obb.size.asArray;
     // obb axis
     vec3 X(o[0], o[1], o[2]);
     vec3 Y(o[3], o[4], o[5]);
@@ -445,20 +501,21 @@ float Raycast(const OBB& obb, const Ray& ray) {
     vec3 f(
         Dot(X, ray.direction),
         Dot(Y, ray.direction),
-        Dot(Z, ray.direction)
-    );
+        Dot(Z, ray.direction));
     // project p onto obb axis.
     vec3 e(
         Dot(X, p),
         Dot(Y, p),
-        Dot(Z, p)
-    );
+        Dot(Z, p));
     // find tmin, tmax for each slab
-    float t[6] = { 0, 0, 0, 0, 0, 0 };
-    for (int i = 0; i < 3; ++i) {
-        if (CMP(f[i], 0)) {
+    float t[6] = {0, 0, 0, 0, 0, 0};
+    for (int i = 0; i < 3; ++i)
+    {
+        if (CMP(f[i], 0))
+        {
             // ray parallel
-            if (-e[i] - size[i] > 0 || -e[i] + size[i] < 0) {
+            if (-e[i] - size[i] > 0 || -e[i] + size[i] < 0)
+            {
                 // ray outside slab
                 return -1;
             }
@@ -466,55 +523,58 @@ float Raycast(const OBB& obb, const Ray& ray) {
             f[i] = 0.00001;
         }
         // min
-        t[i * 2 + 0] = (e[i] + size[i]) /  f[i];
+        t[i * 2 + 0] = (e[i] + size[i]) / f[i];
         // max
-        t[i * 2 + 1] = (e[i] - size[i]) / f[i]; 
+        t[i * 2 + 1] = (e[i] - size[i]) / f[i];
     }
     // largest min
     float tmin = fmaxf(
         fmaxf(
             fminf(t[0], t[1]),
-            fminf(t[2], t[3])
-        ),
-        fminf(t[4], t[5])
-    );
+            fminf(t[2], t[3])),
+        fminf(t[4], t[5]));
     // smallest max
     float tmax = fminf(
         fminf(
             fmaxf(t[0], t[1]),
-            fmaxf(t[2], t[3])
-        ),
-        fmaxf(t[4], t[5])
-    );
-    if (tmax < 0) {
+            fmaxf(t[2], t[3])),
+        fmaxf(t[4], t[5]));
+    if (tmax < 0)
+    {
         return -1.0f;
     }
-    if (tmin > tmax) {
+    if (tmin > tmax)
+    {
         return -1.0f;
     }
-    if (tmin < 0.0f) {
+    if (tmin < 0.0f)
+    {
         return tmax;
     }
     return tmin;
 }
 
-float Raycast(const Plane& plane, const Ray& ray) {
+float Raycast(const Plane &plane, const Ray &ray)
+{
     float nd = Dot(ray.direction, plane.normal);
     float pn = Dot(ray.origin, plane.normal);
     // ray and plane point normal point in the same direction
-    if (nd >= 0.0f) {
+    if (nd >= 0.0f)
+    {
         return -1;
     }
     // plane equation
     float t = (plane.distance - pn) / nd;
-    if (t >= 0.0f) {
+    if (t >= 0.0f)
+    {
         return t;
     }
     // negative t is not valid
     return -1;
 }
 
-bool Linetest(const Sphere& sphere, const Line& line) {
+bool Linetest(const Sphere &sphere, const Line &line)
+{
     // find closest point between line and sphere
     Point closest = ClosestPoint(line, sphere.position);
     // distance between closest poinst ans sphere center
@@ -523,7 +583,8 @@ bool Linetest(const Sphere& sphere, const Line& line) {
     return distSq <= sphere.radius * sphere.radius;
 }
 
-bool Linetest(const AABB& aabb, const Line& line) {
+bool Linetest(const AABB &aabb, const Line &line)
+{
     // create ray out of the line.
     Ray ray;
     ray.origin = line.start;
@@ -534,7 +595,8 @@ bool Linetest(const AABB& aabb, const Line& line) {
     return t >= 0 && t * t <= LengthSq(line);
 }
 
-bool Linetest(const OBB& obb, const Line& line) {
+bool Linetest(const OBB &obb, const Line &line)
+{
     // create ray from line.
     Ray ray;
     ray.origin = line.start;
@@ -545,18 +607,195 @@ bool Linetest(const OBB& obb, const Line& line) {
     return t >= 0 && t * t <= LengthSq(line);
 }
 
-bool Linetest(const Plane& plane, const Line& line) {
+bool Linetest(const Plane &plane, const Line &line)
+{
     vec3 ab = line.end - line.start;
 
     float nA = Dot(plane.normal, line.start);
     float nAB = Dot(plane.normal, ab);
 
     // line and plane are parallel
-    if (CMP(nAB, 0)) {
+    if (CMP(nAB, 0))
+    {
         return false;
     }
 
     // line segment intersect when it satisfies the plane equation.
     float t = (plane.distance - nA) / nAB;
     return t >= 0.0f && t <= 1.0f;
+}
+
+bool PointInTriangle(const Point &p, const Triangle &t)
+{
+}
+
+bool PointInTraingle(const Point &p, const Triangle &t)
+{
+    // create triangle in the local coordinate system of the point.
+    vec3 a = t.a - p;
+    vec3 b = t.b - p;
+    vec3 c = t.c - p;
+    // normal of each side of pyramid
+    vec3 normPBC = Cross(b, c);
+    vec3 normPCA = Cross(c, a);
+    vec3 normPAB = Cross(a, b);
+    // check if normals are pointing in the same direction.
+    if (Dot(normPBC, normPCA) < 0.0f)
+    {
+        return false;
+    }
+    else if (Dot(normPBC, normPAB) < 0.0f)
+    {
+        return false;
+    }
+    return true;
+}
+
+Plane FromTriangle(const Triangle &t)
+{
+    Plane result;
+    result.normal = Normalized(
+        Cross(t.b - t.a, t.c - t.a));
+    result.distance = Dot(result.normal, t.a);
+    return result;
+}
+
+Point ClosestPoint(const Triangle &t, const Point &p)
+{
+    // create plane from triangle.
+    Plane plane = FromTriangle(t);
+    // find closest point on plane to the point.
+    Point closest = ClosestPoint(plane, p);
+    // closest point in triangle
+    if (PointInTriangle(closest, t))
+    {
+        return closest;
+    }
+    // closest point is on the edge of the triangle
+    Point c1 = ClosestPoint(Line(t.a, t.b), p);
+    Point c2 = ClosestPoint(Line(t.b, t.c), p);
+    Point c3 = ClosestPoint(Line(t.c, t.a), p);
+    float magSq1 = MagnitudeSq(p - c1);
+    float magSq2 = MagnitudeSq(p - c2);
+    float magSq3 = MagnitudeSq(p - c3);
+    if (magSq1 < magSq2 && magSq1 < magSq3)
+    {
+        return c1;
+    }
+    else if (magSq2 < magSq1 && magSq2 < magSq3)
+    {
+        return c2;
+    }
+    return c3;
+}
+
+bool TriangleSphere(const Triangle &t, const Sphere &s)
+{
+    // find closest point on the triangle to the sphere.
+    Point closest = ClosestPoint(t, s.position);
+    // compare distance to sphere radius.
+    float magSq = MagnitudeSq(closest - s.position);
+    return magSq <= s.radius * s.radius;
+}
+
+Interval GetInterval(const Triangle &triangle, const vec3 &axis)
+{
+    // iterate through triangle points to get minimum and maximum.
+    Interval result;
+    result.min = Dot(axis, triangle.points[0]);
+    result.max = result.min;
+
+    for (int i = 1; i < 3; ++i)
+    {
+        float value = Dot(axis, triangle.points[i]);
+        result.min = fminf(result.min, value);
+        result.max = fmaxf(result.max, value);
+    }
+
+    return result;
+}
+
+bool OverlapOnAxis(const AABB &aabb, const Triangle &triangle, const vec3 &axis)
+{
+    Interval a = GetInterval(aabb, axis);
+    Interval b = GetInterval(triangle, axis);
+    return b.min <= a.max && a.min <= b.max;
+}
+
+bool TriangleAABB(const Triangle &t, const AABB &a)
+{
+    // SAT
+    // edge vectors of triangle
+    vec3 f0 = t.b - t.a;
+    vec3 f1 = t.c - t.b;
+    vec3 f2 = t.a - t.c;
+    // face normals of aabb
+    vec3 u0(1.0f, 0.0f, 0.0f);
+    vec3 u1(0.0f, 1.0f, 0.0f);
+    vec3 u2(0.0f, 0.0f, 1.0f);
+    // potential separating axes.
+    vec3 test[13] = {
+        // normals of the aabb
+        u0,
+        u1,
+        u2,
+        // normal of triangle
+        Cross(f0, f1),
+        // cross product of aabb normals and triangle edges
+        Cross(u0, f0), Cross(u0, f1), Cross(u0, f2),
+        Cross(u1, f0), Cross(u1, f1), Cross(u1, f2),
+        Cross(u2, f0), Cross(u2, f1), Cross(u2, f2)};
+    // test for overlap on each axes.
+    for (int i = 0; i < 13; ++i)
+    {
+        if (!OverlapOnAxis(a, t, test[i]))
+        {
+            return false;
+        }
+    }
+
+    // no axis of separation found.
+    return true;
+}
+
+bool OverlapOnAxis(const OBB &obb, const Triangle &triangle, const vec3 &axis)
+{
+    Interval a = GetInterval(obb, axis);
+    Interval b = GetInterval(triangle, axis);
+    return b.min <= a.max && a.min <= b.max;
+}
+
+bool TriangleOBB(const Triangle &t, const OBB &o)
+{
+    // edge vectors of triangle
+    vec3 f0 = t.b - t.a;
+    vec3 f1 = t.c - t.b;
+    vec3 f2 = t.a - t.c;
+    // face normals of obb
+    const float *orientation = o.orientation.asArray;
+    vec3 u0(orientation[0], orientation[1], orientation[2]);
+    vec3 u1(orientation[3], orientation[4], orientation[5]);
+    vec3 u2(orientation[6], orientation[7], orientation[8]);
+    // axes
+    vec3 test[13] = {
+        // obb normals
+        u0,
+        u1,
+        u2,
+        // triangle normal
+        Cross(f0, f1),
+        // cross product of aabb normals and triangle edges
+        Cross(u0, f0), Cross(u0, f1), Cross(u0, f2),
+        Cross(u1, f0), Cross(u1, f1), Cross(u1, f2),
+        Cross(u2, f0), Cross(u2, f1), Cross(u2, f2)};
+    // check for overlap on axes
+    for (int i = 0; i < 13; ++i)
+    {
+        if (!OverlapOnAxis(o, t, test[i]))
+        {
+            return false;
+        }
+    }
+    // no axis of separation.
+    return true;
 }
