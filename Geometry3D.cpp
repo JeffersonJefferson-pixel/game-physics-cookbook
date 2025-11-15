@@ -799,3 +799,143 @@ bool TriangleOBB(const Triangle &t, const OBB &o)
     // no axis of separation.
     return true;
 }
+
+bool TrianglePlane(const Triangle &t, const Plane &p)
+{
+    // check which side of the plane that the point of triangle is on
+    float side1 = PlaneEquation(t.a, p);
+    float side2 = PlaneEquation(t.b, p);
+    float side3 = PlaneEquation(t.c, p);
+
+    // on the plane.
+    if (CMP(side1, 0) && CMP(side2, 0) && CMP(side3, 0))
+    {
+        return true;
+    }
+
+    // in front of the plane.
+    if (side1 > 0 && side2 > 0 && side3 > 0)
+    {
+        return false;
+    }
+
+    // behind the plane.
+    if (side1 < 0 && side2 < 0 && side3 < 0)
+    {
+        return false;
+    }
+
+    // point on opposite side.
+    return true;
+}
+
+bool OverlapOnAxis(const Triangle &t1, const Triangle &t2, const vec3 &axis)
+{
+    Interval a = GetInterval(t1, axis);
+    Interval b = GetInterval(t2, axis);
+    return b.min <= a.max && a.min <= b.max;
+}
+
+bool TriangleTriangle(const Triangle &t1, const Triangle &t2)
+{
+    // triangle edges
+    vec3 t1_f0 = t1.b - t1.a;
+    vec3 t1_f1 = t1.c - t1.b;
+    vec3 t1_f2 = t1.a - t1.c;
+
+    vec3 t2_f0 = t2.b - t2.a;
+    vec3 t2_f1 = t2.c - t2.b;
+    vec3 t2_f2 = t2.a - t2.c;
+
+    // potential axis of separation
+    vec3 axisToTest[] = {
+        // normal of triangles
+        Cross(t1_f0, t1_f1),
+        Cross(t2_f0, t2_f1),
+        // corss of triangle edges
+        Cross(t2_f0, t1_f0),
+        Cross(t2_f0, t1_f1),
+        Cross(t2_f0, t1_f2),
+        Cross(t2_f1, t1_f0),
+        Cross(t2_f1, t1_f1),
+        Cross(t2_f1, t1_f2),
+        Cross(t2_f2, t1_f0),
+        Cross(t2_f2, t1_f1),
+        Cross(t2_f2, t1_f2),
+    };
+
+    for (int i = 0; i < 11; ++i)
+    {
+        if (!OverlapOnAxis(t1, t2, axisToTest[i]))
+        {
+            return false;
+        }
+    }
+    // no separating axis.
+    return true;
+}
+
+vec3 SatCrossEdge(const vec3 &a, const vec3 &b, const vec3 &c, const vec3 &d)
+{
+    vec3 ab = a - b;
+    vec3 cd = c - d;
+    vec3 result = Cross(ab, cd);
+    // handle parallel sides.
+    if (!CMP(MagnitudeSq(result), 0))
+    {
+        return result;
+    }
+    else
+    {
+        vec3 axis = Cross(ab, c - a);
+        result = Cross(ab, axis);
+        if (!CMP(MagnitudeSq(result), 0))
+        {
+            return result;
+        }
+    }
+    return vec3();
+}
+
+bool TriangleTriangleRobust(const Triangle &t1, const Triangle &t2)
+{
+    // triangle edges
+    vec3 t1_f0 = t1.b - t1.a;
+    vec3 t1_f1 = t1.c - t1.b;
+    vec3 t1_f2 = t1.a - t1.c;
+
+    vec3 t2_f0 = t2.b - t2.a;
+    vec3 t2_f1 = t2.c - t2.b;
+    vec3 t2_f2 = t2.a - t2.c;
+
+    // potential axis of separation
+    vec3 axisToTest[] = {
+        // normal of triangles
+        SatCrossEdge(t1.a, t1.b, t1.b, t1.c),
+        SatCrossEdge(t2.a, t2.b, t2.c, t2.c),
+        // corss of triangle edges
+        SatCrossEdge(t2.a, t2.b, t1.a, t1.b),
+        SatCrossEdge(t2.a, t2.b, t1.b, t1.c),
+        SatCrossEdge(t2.a, t2.b, t1.c, t1.a),
+        SatCrossEdge(t2.b, t2.c, t1.a, t1.b),
+        SatCrossEdge(t2.b, t2.c, t1.b, t1.c),
+        SatCrossEdge(t2.b, t2.c, t1.c, t1.a),
+        SatCrossEdge(t2.c, t2.a, t1.a, t1.b),
+        SatCrossEdge(t2.c, t2.a, t1.b, t1.c),
+        SatCrossEdge(t2.c, t2.a, t1.c, t1.a),
+    };
+
+    for (int i = 0; i < 11; ++i)
+    {
+        if (!OverlapOnAxis(t1, t2, axisToTest[i]))
+        {
+            // handle edges on straight line.
+            if (!CMP(MagnitudeSq(axisToTest[i]), 0))
+            {
+                return false;
+            }
+        }
+    }
+    // no separating axis.
+    return true;
+}

@@ -229,4 +229,19 @@ bool TriangleAABB(const Triangle &t, const AABB &a);
 
 bool OverlapOnAxis(const OBB &obb, const Triangle &triangle, const vec3 &axis);
 bool TriangleOBB(const Triangle &t, const OBB &o);
+
+// triangle and plane
+
+bool TrianglePlane(const Triangle& t, const Plane& p);
+
+// triangle and triangle
+
+bool OverlapOnAxis(const Triangle& t1, const Triangle& t2, const vec3& axis);
+
+bool TriangleTriangle(const Triangle& t1, const Triangle& t2);
+
+// two pair of points that are used to construct edges of two triangles.
+vec3 SatCrossEdge(const vec3& a, const vec3& b, const vec3&c, const vec3& d);
+
+bool TriangleTriangleRobust(const Triangle& t1, const Triangle& t2);
 #endif
