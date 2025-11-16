@@ -281,4 +281,10 @@ typedef struct BVHNode {
 void AccelerateMesh(Mesh& mesh);
 void SplitBVHNode(BVHNode* node, const Mesh& model, int depth);
 void FreeBVHNode(BVHNode* node);
+
+// mesh operation
+
+// raycast against mesh.
+float MeshRay(const Mesh& mesh, const Ray& ray);
+bool MeshAABB(const Mesh& mesh, const AABB& aabb);
 #endif

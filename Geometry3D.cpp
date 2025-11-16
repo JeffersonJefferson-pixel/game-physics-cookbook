@@ -1,6 +1,7 @@
 #include "Geometry3D.h"
 #include <cmath>
 #include <cfloat>
+#include <list>
 
 #define CMP(x, y) \
     (fabsf((x) - (y)) <= FLT_EPSILON * fmaxf(1.0f, fmaxf(fabsf(x), fabsf(y))))
@@ -1083,4 +1084,102 @@ void SplitBVHNode(BVHNode* node, const Mesh& model, int depth) {
             SplitBVHNode(&node->children[i], model, depth);
         }
     }
+}
+
+void FreeBVHNode(BVHNode* node) {
+    // free children
+    if (node->children != 0) {
+        // recursive free bvh node children
+        for (int i = 0; i < 8; ++i) {
+            FreeBVHNode(&node->children[i]);
+        }
+        delete[] node->children;
+        node->children = 0;
+    }
+    // free triangles
+    if (node->numTriangles != 0 || node->triangles != 0) {
+        delete[] node->triangles;
+        node->triangles = 0;
+        node->numTriangles = 0;
+    }
+}
+
+float MeshRay(const Mesh& mesh, const Ray& ray) {
+    if (mesh.accelerator == 0) {
+        // iterate through triangles in mesh and raycast against each
+        for (int i = 0; i < mesh.numTriangles; ++i) {
+            float result = Raycast(mesh.triangles[i], ray);
+            if (result >= 0) {
+                return result;
+            }
+        }
+    } else {
+        // dfs bvh tree
+        std::list<BVHNode*> toProcess;
+        toProcess.push_front(mesh.accelerator);
+        while (!toProcess.empty()) {
+            // current node
+            BVHNode* iterator = *(toProcess.begin());
+            toProcess.erase(toProcess.begin());
+            // has triangles
+            if (iterator->numTriangles >= 0) {
+                for (int i = 0; i < iterator->numTriangles; ++i) {
+                    float r = Raycast(mesh.triangles[iterator->triangles[i]], ray);
+                    if (r >= 0) {
+                        return r;
+                    }
+                }
+            }
+            // has children
+            if (iterator->children != 0) {
+                for (int i = 8 - 1; i >= 0; --i) {
+                    // raycast against bound
+                    if (Raycast(iterator->children[i].bounds, ray) >= 0) {
+                        toProcess.push_front(&iterator->children[i]);
+                    }
+                }
+            }
+        }
+    }
+
+    return -1;
+}
+
+bool MeshAABB(const Mesh& mesh, const AABB& aabb) {
+       if (mesh.accelerator == 0) {
+        // iterate through triangles in mesh and test against each
+        for (int i = 0; i < mesh.numTriangles; ++i) {
+            if (TriangleAABB(mesh.triangles[i], aabb)) {
+                return true;
+            }
+        }
+    } else {
+        // dfs bvh tree
+        std::list<BVHNode*> toProcess;
+        toProcess.push_front(mesh.accelerator);
+        while (!toProcess.empty()) {
+            // current node
+            BVHNode* iterator = *(toProcess.begin());
+            toProcess.erase(toProcess.begin());
+            // has triangles
+            if (iterator->numTriangles >= 0) {
+                for (int i = 0; i < iterator->numTriangles; ++i) {
+                    if (TriangleAABB(mesh.triangles[iterator->triangles[i]], aabb)) {
+                        return true;
+                    }
+                }
+            }
+            // has children
+            if (iterator->children != 0) {
+                for (int i = 8 - 1; i >= 0; --i) {
+                    // test against bound
+                    if (AABBAABB(iterator->children[i].bounds, aabb) >= 0) {
+                        toProcess.push_front(&iterator->children[i]);
+                    }
+                }
+            }
+        }
+    }
+
+    return -1; 
 }
