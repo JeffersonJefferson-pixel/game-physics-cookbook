@@ -939,3 +939,59 @@ bool TriangleTriangleRobust(const Triangle &t1, const Triangle &t2)
     // no separating axis.
     return true;
 }
+
+vec3 Barycentric(const Point& p, const Triangle& t) {
+    // vectors from test point to triangle points.
+    vec3 ap = p - t.a;
+    vec3 bp = p - t.b;
+    vec3 cp = p - t.c;
+    // triangle edges.s
+    vec3 ab = t.b - t.a;
+    vec3 ac = t.c - t.a;
+    vec3 bc = t.c - t.b;
+    vec3 cb = t.b - t.c;
+    vec3 ca = t.a - t.c;
+    // vector perpendicular to edge ab.
+    vec3 v = ab - Project(ab, cb);
+    float a = 1.0f - (Dot(v, ap) / Dot(v, ab));
+    // vector perpendicular to edge bc.
+    v = bc - Project(bc, ac);
+    float b = 1.0f - (Dot(v, bp) / Dot(v, bc));
+    // vector perpendicular to edge ca.
+    v = ca - Project(ca, ab);
+    float c = 1.0f - (Dot(v, cp) / Dot(v, ca));
+
+    return vec3(a, b, c);
+}
+
+float Raycast(const Triangle& triangle, const Ray& ray) {
+    // create plane from triangle.
+    Plane plane = FromTriangle(triangle);
+    // raycast against plane.
+    float t = Raycast(plane, ray);
+    if (t < 0.0f) {
+        return t;
+    }
+    // point on plane
+    Point result = ray.origin + ray.direction * t;
+    vec3 barycentric = Barycentric(result, triangle);
+    if (barycentric.x >= 0.0f && barycentric.x <= 1.0f && 
+        barycentric.y >= 0.0f && barycentric.y <= 1.0f &&
+        barycentric.z >= 0.0f && barycentric.z <= 1.0f) {
+        // point within triangle.
+        return t;
+    }
+    // point outside triangle.
+    return -1;
+}
+
+bool Linetest(const Triangle& triangle, const Line& line) {
+    // create ray from line.
+    Ray ray;
+    ray.origin = line.start;
+    ray.direction = Normalized(line.end - line.start);
+    // raycast against triangle
+    float t = Raycast(triangle, ray);
+    // check if within line segment.
+    return t >= 0 && t * t <= LengthSq(line);
+}

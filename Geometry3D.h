@@ -244,4 +244,15 @@ bool TriangleTriangle(const Triangle& t1, const Triangle& t2);
 vec3 SatCrossEdge(const vec3& a, const vec3& b, const vec3&c, const vec3& d);
 
 bool TriangleTriangleRobust(const Triangle& t1, const Triangle& t2);
+
+// raycast triangle.
+
+// reutrn barycentric coordinate of a point with a triangle
+vec3 Barycentric(const Point& p, const Triangle& t);
+
+// test if ray hits triangle.
+float Raycast(const Triangle& triangle, const Ray& ray);
+
+// test if a line and triangle intersect
+bool Linetest(const Triangle& triangle, const Line& line);
 #endif
