@@ -995,3 +995,92 @@ bool Linetest(const Triangle& triangle, const Line& line) {
     // check if within line segment.
     return t >= 0 && t * t <= LengthSq(line);
 }
+
+void AccelerateMesh(Mesh& mesh) {
+    if (mesh.accelerator != 0) {
+        return;
+    }
+    // find minimum and maximum points of mesh.
+    vec3 min = mesh.vertices[0];
+    vec3 max = mesh.vertices[0];
+    for (int i = 1; i < mesh.numTriangles * 3; ++i) {
+        min.x = fminf(mesh.vertices[i].x, min.x);
+        min.y = fminf(mesh.vertices[i].y, min.y);
+        min.z = fminf(mesh.vertices[i].z, min.z);
+        max.x = fmaxf(mesh.vertices[i].x, max.x);
+        max.y = fmaxf(mesh.vertices[i].y, max.y);
+        max.z = fmaxf(mesh.vertices[i].z, max.z);
+    }
+    // create bvh for mesh.
+    mesh.accelerator = new BVHNode();
+    mesh.accelerator->bounds = FromMinMax(min, max);
+    mesh.accelerator->numTriangles = mesh.numTriangles;
+    // allocate memory for triangle indices.
+    mesh.accelerator->triangles = new int[mesh.numTriangles];
+    for (int i = 0 ; i < mesh.numTriangles; ++i) {
+        mesh.accelerator-> triangles[i] = i;
+    }
+    // split bvh tree.
+    SplitBVHNode(mesh.accelerator, mesh, 3);   
+}
+
+void SplitBVHNode(BVHNode* node, const Mesh& model, int depth) {
+    if (depth-- == 0) {
+        return;
+    }
+    if (node->children == 0) {
+        // split leaf node
+        if (node->numTriangles > 0) {
+            // eight children
+            node->children = new BVHNode[8];
+            vec3 c = node->bounds.position;
+            vec3 e = node->bounds.size * 0.5f;
+
+            node->children[0].bounds = AABB(c + vec3(-e.x, +e.y, -e.z), e);
+            node->children[1].bounds = AABB(c + vec3(+e.x, +e.y, -e.z), e);
+            node->children[2].bounds = AABB(c + vec3(-e.x, +e.y, +e.z), e);
+            node->children[3].bounds = AABB(c + vec3(+e.x, +e.y, +e.z), e);
+            node->children[4].bounds = AABB(c + vec3(-e.x, -e.y, -e.z), e);
+            node->children[5].bounds = AABB(c + vec3(+e.x, -e.y, -e.z), e);
+            node->children[6].bounds = AABB(c + vec3(-e.x, -e.y, +e.z), e);
+            node->children[7].bounds = AABB(c + vec3(+e.x, -e.y, +e.z), e);
+
+        }
+
+    }
+
+    if (node->children != 0 && node->numTriangles > 0) {
+        // assign triangles to child node.
+        for (int i = 0; i < 8; ++i) {
+            node->children[i].numTriangles = 0;
+            for (int j = 0; j < node->numTriangles; ++j) {
+                Triangle t = model.triangles[node->triangles[j]];
+                // check if intersect with child bound
+                if (TriangleAABB(t, node->children[i].bounds)) {
+                    node->children[i].numTriangles += 1;
+                }
+            }
+            if (node->children[i].numTriangles == 0) {
+                continue;
+            }
+            node->children[i].triangles = new int[node->children[i].numTriangles];
+            int index = 0;
+            for (int j = 0; j < node->numTriangles; ++j) {
+                Triangle t = model.triangles[node->triangles[j]];
+                if (TriangleAABB(t, node->children[i].bounds)) {
+                    node->children[i].triangles[index++] = node->triangles[j]; 
+                }
+            }
+        }
+
+        // clean up
+        node->numTriangles = 0;
+        delete[] node->triangles;
+        node->triangles = 0;
+
+        // recurse
+        for (int i = 0; i < 8; ++i) {
+            SplitBVHNode(&node->children[i], model, depth);
+        }
+    }
+}

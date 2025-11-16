@@ -255,4 +255,30 @@ float Raycast(const Triangle& triangle, const Ray& ray);
 
 // test if a line and triangle intersect
 bool Linetest(const Triangle& triangle, const Line& line);
+
+// mesh
+typedef struct Mesh {
+    int numTriangles;
+    union {
+        Triangle* triangles;
+        Point* vertices;
+        float* values;
+    };
+    BVHNode* accelerator;
+    Mesh() : numTriangles(0), values(0), accelerator(0) {} 
+} Mesh;
+
+// bvh
+
+typedef struct BVHNode {
+    AABB bounds;
+    BVHNode* children;
+    int numTriangles;
+    int* triangles;
+    BVHNode() : children(0), numTriangles(0), triangles(0) {}
+} BVHNode;
+
+void AccelerateMesh(Mesh& mesh);
+void SplitBVHNode(BVHNode* node, const Mesh& model, int depth);
+void FreeBVHNode(BVHNode* node);
 #endif
