@@ -287,4 +287,45 @@ void FreeBVHNode(BVHNode* node);
 // raycast against mesh.
 float MeshRay(const Mesh& mesh, const Ray& ray);
 bool MeshAABB(const Mesh& mesh, const AABB& aabb);
+bool Linetest(const Mesh& mesh, const Line& line);
+bool MeshSphere(const Mesh& mesh, const Sphere& sphere);
+bool MeshOBB(const Mesh& mesh, const OBB& obb);
+bool MeshPlane(const Mesh& mesh, const Plane& plane);
+bool MeshTriangle(const Mesh& mesh, const Triangle& triangle);
+
+// models and scenes
+
+class Model {
+protected:
+    Mesh* content;
+    AABB bounds;
+public: 
+    vec3 position;
+    vec3 rotation;
+    // model hierarchy.
+    Model* parent;
+
+    inline Model() : parent(0), content(0) {}
+    inline Mesh* GetMesh() const {
+        return content;
+    }
+    inline AABB GetBounds() const {
+        return bounds;
+    }
+    void setContent(Mesh* mesh);
+};
+
+mat4 GetWorldMatrix(const Model& model);
+// transform bound of model into world space.
+OBB GetOBB(const Model& model);
+
+// operation on model
+
+float ModelRay(const Model& model, const Ray& ray);
+bool Linetest(const Model& model, const Line& line);
+bool ModelSphere(const Model& model, const Sphere& sphere);
+bool ModelAABB(const Model& model, const AABB& aabb);
+bool ModelOBB(const Model& model, const OBB& obb);
+bool ModelPlane(const Model& model, const Plane& plane);
+bool ModelTriangle(const Model& model, const Triangle& triangle);
 #endif
