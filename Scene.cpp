@@ -38,6 +38,10 @@ std::vector<Model*> Scene::FindChildren(const Model* model) {
 }
 
 Model* Scene::Raycast(const Ray& ray) {
+    // raycast against octree if exists.
+    if (octree != 0) {
+        return ::Raycast(octree, ray);
+    }
     Model* result = 0;
     float result_t = -1;
     // ray cast against all models in the scene and store minimum.
@@ -55,6 +59,10 @@ Model* Scene::Raycast(const Ray& ray) {
 }
 
 std::vector<Model*> Scene::Query(const Sphere& sphere) {
+    // query against octree if exits.
+    if (octree != 0) {
+        return ::Query(octree, sphere);
+    }
     std::vector<Model*> result;
     // loop through models in scene.
     for (int i = 0, size = objects.size(); i < size; ++i) {
@@ -69,6 +77,9 @@ std::vector<Model*> Scene::Query(const Sphere& sphere) {
 }
 
 std::vector<Model*> Scene::Query(const AABB& aabb) {
+    if (octree != 0) {
+        return ::Query(octree, aabb);
+    }
     std::vector<Model*> result;
     // loop through models in scene.
     for (int i = 0, size = objects.size(); i < size; ++i) {
@@ -168,6 +179,7 @@ Model* FindClosest(const std::vector<Model*>& set, const Ray& ray) {
         if (this_t < 0) {
             continue;
         }
+        // get the raycast with smallest t
         if (closest_t < 0 || this_t < closest_t) {
             closest_t = this_t;
             closest = set[i];
@@ -181,6 +193,7 @@ Model* Raycast(OctreeNode* node, const Ray& ray) {
     float t = Raycast(node->bounds, ray);
     if (t >= 0) {
         if (node->children == 0) {
+            // find closest among models in the leaf node.
             return FindClosest(node->models, ray);
         } else {
             // raycast against children node
@@ -200,15 +213,20 @@ Model* Raycast(OctreeNode* node, const Ray& ray) {
 
 std::vector<Model*> Query(OctreeNode* node, const Sphere& sphere) {
     std::vector<Model*> result;
+    // check sphere intersect with node bounds.
     if (SphereAABB(sphere, node->bounds)) {
         if (node->children == 0) {
+            // leaf node.
+            // loop through each models.
             for (int i = 0, size = node->models.size(); i < size; ++i) {
                 OBB bounds = GetOBB(*(node->models[i]));
+                // check sphere intersect with model bound.
                 if (SphereOBB(sphere, bounds)) {
                     result.push_back(node->models[i]);
                 }
             }
         } else {
+            // recursively query node children.
             for (int i = 0; i < 8; ++i) {
                 std::vector<Model*> child = Query(&(node->children[i]), sphere);
                 if (child.size() > 0) {
@@ -242,4 +260,23 @@ std::vector<Model*> Query(OctreeNode* node, const AABB& aabb) {
         }
     }
     return result;
+}
+
+bool Scene::Accelerate(const vec3& position, float size) {
+    if (octree != 0) {
+        return false;
+    }
+    // compute minimum and maximum point for octree bounds.
+    vec3 min(position.x - size, position.y - size, position.z - size);
+    vec3 max(position.x + size, position.y + size, position.z + size);
+    // construct octree
+    octree = new OctreeNode();
+    octree->bounds = FromMinMax(min, max);
+    octree->children = 0;
+    for (int i = 0, size = objects.size(); i < size; ++i) {
+        octree->models.push_back(objects[i]);
+    }
+    // split 5 levels deep
+    SplitTree(octree, 5);
+    return true;
 }

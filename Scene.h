@@ -7,7 +7,19 @@
 class Scene {
 protected:
     std::vector<Model*> objects;
+    // acceleration structure for scene.
+    OctreeNode* octree;
+private:
+    // disable copy constructor and assignment
+    Scene(const Scene&);
+    Scene& operator=(const Scene&);
 public: 
+    inline Scene() : octree(0) {}
+    inline ~Scene() {
+        if (octree != 0) {
+            delete octree;
+        }
+    }
     // add model to the scene.
     void AddModel(Model* model);
     // remoev model from the scene.
@@ -21,6 +33,7 @@ public:
     std::vector<Model*> Query(const Sphere& sphere);
     // resturn models in an aabb.
     std::vector<Model*> Query(const AABB& aabb);
+    bool Accelerate(const vec3& position, float size);
 };
 
 // octree
