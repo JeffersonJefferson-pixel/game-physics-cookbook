@@ -350,4 +350,15 @@ Point Intersection(Plane p1, Plane p2, Plane p3);
 
 // find corner of frustum.
 void GetCorners(const Frustum& f, vec3* outCorners);
+
+bool Intersects(const Frustum& f, const Point& p);
+bool Intersects(const Frustum& f, const Sphere& s);
+
+// bounding box in frustum
+
+// classify whether box is in front, behind or intersect plane.
+float Classify(const AABB& aabb, const Plane& plane);
+float Classify(const OBB& obb, const Plane& plane);
+bool Intersects(const Frustum& f, const AABB& aabb);
+bool Intersects(const Frustum& f, const OBB& obb);
 #endif

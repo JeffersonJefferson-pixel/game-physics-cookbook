@@ -213,9 +213,11 @@ float OrbitCamera::ClampAngle(float angle, float min, float max) {
 Frustum Camera::GetFrustum() {
     Frustum result;
     mat4 vp = GetViewMatrix() * GetProjectionMatrix();
+    // the first, second and third columns represent the normals of the  frustum planes
     vec3 col1(vp._11, vp._21, vp._31);
     vec3 col2(vp._12, vp._22, vp._32);
     vec3 col3(vp._13, vp._23, vp._33);
+    // forth column of view projection matrix represents the z-axis of the camera
     vec3 col4(vp._14, vp._24, vp._34);
     // normal of planes
     result.left.normal = col4 + col1;

@@ -1555,3 +1555,78 @@ void GetCorners(const Frustum& f, vec3* outCorners) {
     outCorners[2] = Intersection(f._far, f.bottom, f.left);
     outCorners[3] = Intersection(f._far, f.bottom, f.right);
 }
+
+bool Intersects(const Frustum& f, const Point& p) {
+    // loop planes of frustum
+    for (int i = 0; i < 6; ++i) {
+        vec3 normal = f.planes[i].normal;
+        float dist = f.planes[i].distance;
+        float side = Dot(p, normal) + dist;
+        if (side < 0.0f) {
+            // behind plane
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Intersects(const Frustum& f, const Sphere& s) {
+    for (int i = 0; i < 6; ++i) {
+        vec3 normal = f.planes[i].normal;
+        float dist = f.planes[i].distance;
+        float side = Dot(s.position, normal) + dist;
+        if (side < -s.radius) {
+            // behind plane
+            return false;
+        }
+    }
+    return true;
+}
+
+float Classify(const AABB& aabb, const Plane& plane) {
+    // projection of positive extents of aabb onto the plane.
+    float r = fabsf(aabb.size.x * plane.normal.x) + fabsf(aabb.size.y * plane.normal.y) + fabsf(aabb.size.z * plane.normal.z);
+    // signed distance betweeen center of aabb and plane.
+    float d = Dot(plane.normal, aabb.position) + plane.distance;
+    if (fabsf(d) < r) {
+        return 0.0f;
+    } else if (d < 0.0f) {
+        // box behind plane
+        return d + r;
+    }
+    // box in front of plane
+    return d - r;
+}
+
+float Classify(const OBB& obb, const Plane& plane) {
+    // transform plane normal to local space of the obb
+    vec3 normal = MultiplyVector(plane.normal, obb.orientation);
+    float r = fabsf(obb.size.x * normal.x) + fabsf(obb.size.y * normal.y) + fabsf(obb.size.z * normal.z);
+    // signed distance
+    float d = Dot(plane.normal, obb.position) + plane.distance;
+
+    if (fabsf(d) < r) {
+        return 0.0f;
+    } else if (d < 0.0f) {
+        return d + r;
+    }
+    return d - r;
+}
+
+bool Intersects(const Frustum& f, const AABB& aabb) {
+    for (int i = 0; i < 6; ++i) {
+        if (Classify(aabb, f.planes[i]) < 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Intersects(const Frustum& f, const OBB& obb) {
+    for (int i = 0; i < 6; ++i) {
+        if (Classify(obb, f.planes[i]) < 0) {
+            return false;
+        }
+    }
+    return true;
+}
