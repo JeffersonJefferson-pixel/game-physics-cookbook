@@ -1515,3 +1515,43 @@ bool ModelTriangle(const Model& model, const Triangle& triangle) {
     }
     return false;
 }
+
+Point Intersection(Plane p1, Plane p2, Plane p3) {
+    // solve using  cramer's rule
+    // coefficient matrix.
+    mat3 D(
+        p1.normal.x, p2.normal.x, p3.normal.x,
+        p1.normal.y, p2.normal.y, p3.normal.y,
+        p1.normal.z, p2.normal.z, p3.normal.z
+    );
+    // answer row
+    vec3 A(-p1.distance, -p2.distance, -p3.distance);
+    // row replaced by answer row
+    mat3 Dx = D;
+    mat3 Dy = D;
+    mat3 Dz = D;
+    Dx._11 = A.x; Dx._12 = A.y; Dx._13 = A.z;
+    Dy._21 = A.x; Dy._22 = A.y; Dy._23 = A.z;
+    Dz._31 = A.x; Dz._32 = A.y; Dz._33 = A.z;
+    // determinant
+    float detD = Determinant(D);
+    if (CMP(detD, 0)) {
+        return Point();
+    }
+    float detDx = Determinant(Dx);
+    float detDy = Determinant(Dy);
+    float detDz = Determinant(Dz);
+    return Point(detDx / detD, detDy / detD, detDz / detD);
+}
+
+void GetCorners(const Frustum& f, vec3* outCorners) {
+    // call intersection on the frustum planes.
+    outCorners[0] = Intersection(f._near, f.top, f.left);
+    outCorners[1] = Intersection(f._near, f.top, f.right);
+    outCorners[2] = Intersection(f._near, f.bottom, f.left);
+    outCorners[3] = Intersection(f._near, f.bottom, f.right);
+    outCorners[2] = Intersection(f._far, f.bottom, f.left);
+    outCorners[3] = Intersection(f._far, f.bottom, f.right);
+    outCorners[2] = Intersection(f._far, f.bottom, f.left);
+    outCorners[3] = Intersection(f._far, f.bottom, f.right);
+}

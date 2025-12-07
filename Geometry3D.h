@@ -328,4 +328,26 @@ bool ModelAABB(const Model& model, const AABB& aabb);
 bool ModelOBB(const Model& model, const OBB& obb);
 bool ModelPlane(const Model& model, const Plane& plane);
 bool ModelTriangle(const Model& model, const Triangle& triangle);
+
+
+typedef struct Frustum {
+    union {
+        struct {
+            Plane top;
+            Plane bottom;
+            Plane left;
+            Plane right;
+            Plane _near;
+            Plane _far;
+        };
+        Plane planes[6];
+    };
+    inline Frustum() {}
+} Frustum;
+
+// find intersectino point of 3 planes
+Point Intersection(Plane p1, Plane p2, Plane p3);
+
+// find corner of frustum.
+void GetCorners(const Frustum& f, vec3* outCorners);
 #endif
