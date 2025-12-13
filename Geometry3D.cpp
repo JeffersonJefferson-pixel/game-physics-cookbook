@@ -1630,3 +1630,55 @@ bool Intersects(const Frustum& f, const OBB& obb) {
     }
     return true;
 }
+
+vec3 Unproject(const vec3& viewportPoint, const vec2& viewportOrigin, const vec2& viewportSize, const mat4& view, const mat4& projection) {
+    // normalize input vector to the view port.
+    float normalized[4] = {
+        (viewportPoint.x - viewportOrigin.x) / viewportSize.x,
+        (viewportPoint.y - viewportOrigin.y) / viewportSize.y,
+        viewportPoint.z,
+        1.0f
+    };
+    // translate to ndc space
+    float ndcSpace[4] = {
+        normalized[0], normalized[1],
+        normalized[2], normalized[3]
+    };
+    ndcSpace[0] = ndcSpace[0] * 2.0f - 1.0f;
+    ndcSpace[1] = 1.0f - ndcSpace[1] * 2.0f;
+    if (ndcSpace[2] < 0.0f) {
+        ndcSpace[2] = 0.0f;
+    }
+    if (ndcSpace[2] > 1.0f) {
+        ndcSpace[2] = 1.0f;
+    }
+    // transform to eye space
+    mat4 invProjection = Inverse(projection);
+    float eyeSpace[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    Multiply(eyeSpace, ndcSpace, 1, 4, invProjection.asArray, 4, 4);
+    // traslate into world space
+    mat4 invView = Inverse(view);
+    float worldSpace[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    Multiply(worldSpace, eyeSpace, 1, 4, invView.asArray, 4, 4);
+    // undo perspective divide
+    if (!CMP(worldSpace[3], 0.0f)) {
+        worldSpace[0] /= worldSpace[3];
+        worldSpace[1] /= worldSpace[3];
+        worldSpace[2] /= worldSpace[3];
+    }
+
+    return vec3(worldSpace[0], worldSpace[1], worldSpace[2]);
+}
+
+Ray GetPickRay(const vec2& viewportPoint, const vec2& viewportOrigin, const vec2& viewportSize, const mat4& view, const mat4& projection) {
+    // near and far point.
+    vec3 nearPoint(viewportPoint.x, viewportPoint.y, 0.0f);
+    vec3 farPoint(viewportPoint.x, viewportPoint.y, 1.0f);
+    // unproject
+    vec3 pNear = Unproject(nearPoint, viewportOrigin, viewportSize, view, projection);
+    vec3 pFar = Unproject(farPoint, viewportOrigin, viewportSize, view, projection);
+    // construct ray
+    vec3 normal = Normalized(pFar - pNear);
+    vec3 origin = pNear;
+    return Ray(origin, normal);
+}

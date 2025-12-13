@@ -1,6 +1,7 @@
 #include "Scene.h"
 #include <algorithm>
 #include <stack>
+#include <list>
 
 void Scene::AddModel(Model* model) {
     // only add if model is not already in the scene.
@@ -279,4 +280,47 @@ bool Scene::Accelerate(const vec3& position, float size) {
     // split 5 levels deep
     SplitTree(octree, 5);
     return true;
+}
+
+std::vector<Model*> Scene::Cull(const Frustum& f) {
+    std::vector<Model*> result;
+
+    if (octree == 0) {
+        // loop through objects and check intersection against frurstum.
+        for (int i = 0; i < objects.size(); ++i) {
+            OBB bounds = GetOBB(*(objects[i]));
+            if (Intersects(f, bounds)) {
+                result.push_back(objects[i]);
+            }
+        }
+    } else {
+        std::list<OctreeNode*> nodes;
+        nodes.push_back(octree);
+        // walk the octree depth first
+        while (nodes.size() > 0) {
+            OctreeNode* active = *nodes.begin();
+            nodes.pop_front();
+            if (active->children != 0) {
+                // non-leaf node
+                for (int i = 0; i < 8; ++i) {
+                    // check for intersection against children node
+                    AABB bounds = active->children[i].bounds;
+                    if (Intersects(f, bounds)) {
+                        nodes.push_back(&active->children[i]);
+                    }
+                }
+            } else {
+                // leaf nodes.
+                // check against objects in leaf node.
+                for (int i = 0; i < active->models.size(); ++i) {
+                    OBB bounds = GetOBB(*(active->models[i]));
+                    if (Intersects(f, bounds)) {
+                        result.push_back(active->models[i]);
+                    }
+                }
+            }
+        }
+    }
+
+    return result;
 }

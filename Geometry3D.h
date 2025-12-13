@@ -361,4 +361,9 @@ float Classify(const AABB& aabb, const Plane& plane);
 float Classify(const OBB& obb, const Plane& plane);
 bool Intersects(const Frustum& f, const AABB& aabb);
 bool Intersects(const Frustum& f, const OBB& obb);
+
+// turn screen space pixel into world pace vector.
+vec3 Unproject(const vec3& viewportPoint, const vec2& viewportOrigin, const vec2& viewportSize, const mat4& view, const mat4& projection);
+/// returns a ray from near to far plane.
+Ray GetPickRay(const vec2& viewportPoint, const vec2& viewportOrigin, const vec2& viewportSize, const mat4& view, const mat4& projection);
 #endif

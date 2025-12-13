@@ -34,6 +34,10 @@ public:
     // resturn models in an aabb.
     std::vector<Model*> Query(const AABB& aabb);
     bool Accelerate(const vec3& position, float size);
+
+
+    // return a list of objects in the scene that intersect with the given frustum.
+    std::vector<Model*> Cull(const Frustum& f);
 };
 
 // octree
