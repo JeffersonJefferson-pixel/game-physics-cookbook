@@ -183,17 +183,26 @@ bool PlanePlane(const Plane &plane1, const Plane &plane2);
 
 // 3D line intersection
 
+typedef struct RaycastResult {
+    vec3 point;
+    vec3 normal;
+    float t;
+    bool hit;
+} RaycastResult;
+
+void ResetRaycastResult(RaycastResult* outResult);
+
 // ray and sphere
-float Raycast(const Sphere &sphere, const Ray &ray);
+bool Raycast(const Sphere &sphere, const Ray &ray, RaycastResult* outResult);
 
 // ray and aabb
-float Raycast(const AABB &aabb, const Ray &ray);
+bool Raycast(const AABB &aabb, const Ray &ray, RaycastResult* outResult);
 
 // ray and oobb
-float Raycast(const OBB &obb, const Ray &ray);
+bool Raycast(const OBB &obb, const Ray &ray, RaycastResult* outResult);
 
 // ray and plane
-float Raycast(const Plane &plane, const Ray &ray);
+bool Raycast(const Plane &plane, const Ray &ray, RaycastResult* outResult);
 
 // line and sphere
 bool Linetest(const Sphere &sphere, const Line &line);
@@ -251,7 +260,7 @@ bool TriangleTriangleRobust(const Triangle& t1, const Triangle& t2);
 vec3 Barycentric(const Point& p, const Triangle& t);
 
 // test if ray hits triangle.
-float Raycast(const Triangle& triangle, const Ray& ray);
+bool Raycast(const Triangle& triangle, const Ray& ray, RaycastResult* outResult);
 
 // test if a line and triangle intersect
 bool Linetest(const Triangle& triangle, const Line& line);
