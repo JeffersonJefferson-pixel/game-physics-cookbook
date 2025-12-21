@@ -1770,3 +1770,132 @@ Ray GetPickRay(const vec2& viewportPoint, const vec2& viewportOrigin, const vec2
     vec3 origin = pNear;
     return Ray(origin, normal);
 }
+
+void ResetCollisionManifold(CollisionManifold* result) {
+    if (result != 0) {
+        result->colliding = false;
+        result->normal = vec3(0, 0, 1);
+        result->depth = FLT_MAX;
+        result->contacts.clear();
+    }
+}
+
+CollisionManifold FindCollisionFeatures(const Sphere& A, const Sphere& B) {
+    CollisionManifold result;
+    ResetCollisionManifold(&result);
+
+    // check for intersection
+    float r = A.radius + B.radius;
+    vec3 d = B.position - A.position;
+    if (Magnitude(d) - r *r > 0 || MagnitudeSq(d) == 0.0f) {
+        return result;
+    }
+
+    Normalize(d);
+    // set manifold
+    result.colliding = true;
+    result.normal = d;
+    // half the distance between the sphere minus the combined radius
+    result.depth = fabsf(Magnitude(d) - r) * 0.5f;
+    // distance to intersectino point
+    float dtp = A.radius - result.depth;
+    Point contact = A.position + d * dtp;
+    result.contacts.push_back(contact);
+
+    return result;
+}
+
+CollisionManifold FindCollisionFeatures(const OBB& A, const Sphere& B) {
+    CollisionManifold result;
+    ResetCollisionManifold(&result);
+    // check intersection
+    // closest poitn on surface of obb
+    Point closestPoint = ClosestPoint(A, B.position);
+    float distanceSq = MagnitudeSq(closestPoint - B.position);
+    if (distanceSq > B.radius * B.radius) {
+        return result;
+    }
+    // normal is vector from closest point on the obb to center of sphere
+    vec3 normal;
+    if (CMP(distanceSq, 0.0f)) {
+        // closest point at center of sphere
+        float mSq = Magnitude(closestPoint - A.position);
+        if (CMP(mSq, 0.0f)) {
+            // can't find normal vector
+            return result;
+        } 
+        normal = Normalized(closestPoint - A.position);
+    } else {
+        normal = Normalized(B.position - closestPoint);
+    }
+    // closest point on surface of sphere
+    Point outsidePoint = B.position - normal * B.radius;
+    float distance = Magnitude(closestPoint - outsidePoint);
+    result.colliding = true;
+    // halfway between the objects along the collision normal
+    result.contacts.push_back(closestPoint + (outsidePoint - closestPoint) * 0.5f);
+    result.normal = normal;
+    result.depth = distance * 0.5f;
+
+    return result;
+}
+
+std::vector<Point> GetVertices(const OBB& obb) {
+    std::vector<vec3> v;
+    v.resize(8);
+    vec3 C = obb.position;
+    vec3 E = obb.size;
+    const float* o = obb.orientation.asArray;
+    vec3 A[] = {
+        vec3(o[0], o[1], o[2]),
+        vec3(o[3], o[4], o[5]),
+        vec3(o[6], o[7], o[8]),
+    };
+    v[0] = C + A[0] * E[0] + A[1] * E[1] + A[2] * E[2];
+    v[1] = C - A[0] * E[0] + A[1] * E[1] + A[2] * E[2];
+    v[2] = C + A[0] * E[0] - A[1] * E[2] + A[2] * E[2];
+    v[3] = C + A[0] * E[0] + A[1] * E[2] - A[2] * E[2];
+    v[4] = C - A[0] * E[0] - A[1] * E[2] - A[2] * E[2];
+    v[5] = C + A[0] * E[0] - A[1] * E[2] - A[2] * E[2];
+    v[6] = C - A[0] * E[0] + A[1] * E[2] - A[2] * E[2];
+    v[7] = C - A[0] * E[0] - A[1] * E[2] + A[2] * E[2];
+
+    return v;
+}
+
+std::vector<Line> GetEdges(const OBB& obb) {
+    std::vector<Line> result;
+    result.reserve(12);
+    std::vector<Point> v = GetVertices(obb);
+    int index[][2] = {
+        {6, 1}, {6, 3}, {6, 4}, {2, 7} ,{2, 5}, {2, 0},
+        {0, 1}, {0, 3}, {7, 1}, {7, 4}, {4, 5}, {5, 3}
+    };
+    for (int j = 0; j < 12; ++j) {
+        result.push_back(Line(
+            v[index[j][0]], v[index[j][1]]
+        ));
+    }
+    return result;
+}
+
+std::vector<Plane> GetPlanes(const OBB& obb) {
+    vec3 c = obb.position;
+    vec3 e = obb.size;
+    const float* o = obb.orientation.asArray;
+    vec3 a[] = {
+        vec3(o[0], o[1], o[2]),
+        vec3(o[3], o[4], o[5]),
+        vec3(o[6], o[7], o[8])
+    };
+    std::vector<Plane> result;
+    result.resize(6);
+    result[0] = Plane(a[0], Dot(a[0], (c + a[0] * e.x)));
+    result[1] = Plane(a[0] * -1.0f, -Dot(a[0], (c - a[0] * e.x)));
+    result[2] = Plane(a[1], Dot(a[1], (c + a[1] * e.y)));
+    result[3] = Plane(a[1] * -1.0f, -Dot(a[1], (c - a[1] * e.y)));
+    result[4] = Plane(a[2], Dot(a[2], (c + a[2] * e.z)));
+    result[5] = Plane(a[2] * -1.0f, -Dot(a[2], (c - a[2] * e.z)));
+    
+    return result;
+}

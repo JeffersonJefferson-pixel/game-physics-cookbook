@@ -3,6 +3,7 @@
 
 #include "vectors.h"
 #include "matrices.h"
+#include <vector>
 
 typedef vec3 Point;
 
@@ -375,4 +376,24 @@ bool Intersects(const Frustum& f, const OBB& obb);
 vec3 Unproject(const vec3& viewportPoint, const vec2& viewportOrigin, const vec2& viewportSize, const mat4& view, const mat4& projection);
 /// returns a ray from near to far plane.
 Ray GetPickRay(const vec2& viewportPoint, const vec2& viewportOrigin, const vec2& viewportSize, const mat4& view, const mat4& projection);
+
+// collision manifold
+typedef struct CollisionManifold {
+    bool colliding;
+    vec3 normal;
+    float depth;
+    std::vector<vec3> contacts;
+};
+
+void ResetCollisionManifold(CollisionManifold* result);
+
+CollisionManifold FindCollisionFeatures(const Sphere& A, const Sphere& B);
+CollisionManifold FindCollisionFeatures(const OBB& A, const Sphere& B);
+std::vector<Point> GetVertices(const OBB& obb);
+std::vector<Line> GetEdges(const OBB& obb);
+std::vector<Plane> GetPlanes(const OBB& obb);
+bool ClipToPlane(const Plane& plane, const Line& line, Point* outPoint);
+std::vector<Point> ClipEdgesToOBB(const std::vector<Line>& edges, const OBB& obb);
+float Penetrationdepth(const OBB& o1, const OBB& o2, const vec3& axis, bool* outShouldFlip);
+CollisionManifold FindCollisionFeatures(const OBB& A, const OBB& B);
 #endif
