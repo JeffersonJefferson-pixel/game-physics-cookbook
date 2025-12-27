@@ -389,11 +389,17 @@ void ResetCollisionManifold(CollisionManifold* result);
 
 CollisionManifold FindCollisionFeatures(const Sphere& A, const Sphere& B);
 CollisionManifold FindCollisionFeatures(const OBB& A, const Sphere& B);
+// return eight vertices of obb.
 std::vector<Point> GetVertices(const OBB& obb);
+// return 12 edges of the obb.
 std::vector<Line> GetEdges(const OBB& obb);
+// return 6 planes of the obb.
 std::vector<Plane> GetPlanes(const OBB& obb);
+// check for intersection between plane and line and return point of intersection.
 bool ClipToPlane(const Plane& plane, const Line& line, Point* outPoint);
+// clip edges against another obb and return intersection points
 std::vector<Point> ClipEdgesToOBB(const std::vector<Line>& edges, const OBB& obb);
-float Penetrationdepth(const OBB& o1, const OBB& o2, const vec3& axis, bool* outShouldFlip);
+// return length of overlap between two obb on a given axis.
+float PenetrationDepth(const OBB& o1, const OBB& o2, const vec3& axis, bool* outShouldFlip);
 CollisionManifold FindCollisionFeatures(const OBB& A, const OBB& B);
 #endif

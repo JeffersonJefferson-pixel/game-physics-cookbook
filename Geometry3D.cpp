@@ -1899,3 +1899,138 @@ std::vector<Plane> GetPlanes(const OBB& obb) {
     
     return result;
 }
+
+bool ClipToPlane(const Plane& plane, const Line& line, Point* outPoint) {
+    // check line intersect with plane.
+    vec3 ab = line.end - line.start;
+    float nAB = Dot(plane.normal, ab);
+    if (CMP(nAB, 0)) {
+        return false;
+    }
+    float nA = Dot(plane.normal, line.start);
+    // time at which line intersect with plane.
+    float t = (plane.distance - nA) / nAB;
+    if (t >= 0.0f && t <= 1.0f) {
+        if (outPoint != 0) {
+            *outPoint = line.start + ab * t;
+        }
+        return true;
+    }
+
+    return false;
+}
+
+std::vector<Point> ClipEdgesToOBB(const std::vector<Line>& edges, const OBB& obb) {
+    std::vector<Point> result;
+    result.reserve(edges.size());
+    Point intersection;
+    std::vector<Plane> planes = GetPlanes(obb);
+    // clip edges to planes of obb
+    for (int i = 0; i < planes.size(); ++i) {
+        for (int j = 0; i < edges.size(); ++j) {
+            if (ClipToPlane(planes[i], edges[j], &intersection)) {
+                if (PointInOBB(intersection, obb)) {
+                    result.push_back(intersection);
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+float PenetrationDepth(const OBB& o1, const OBB& o2, const vec3& axis, bool* outShouldFlip) {
+    // project obb onto axis.
+    Interval i1 = GetInterval(o1, Normalized(axis));
+    Interval i2 = GetInterval(o2, Normalized(axis));
+    if (!((i2.min <= i1.max) && (i1.min <= i2.max))) {
+        // no penetration
+        return 0.0f;
+    }
+    // length of interval
+    float len1 = i1.max - i1.min;
+    float len2 = i2.max - i2.min;
+    float min = fminf(i1.min, i2.min);
+    float max = fmaxf(i1.max, i2.max);
+    // length of combined interval
+    float length = max - min;
+    if (outShouldFlip != 0) {
+        // flip collision normal if second obb is infront of the first one.
+        *outShouldFlip = (i2.min < i1.min);
+    }
+    return (len1 + len2) - length;
+}
+
+CollisionManifold FindCollisionFeatures(const OBB& A, const OBB& B) {
+    CollisionManifold result;
+    ResetCollisionManifold(&result);
+    // orientation
+    const float* o1 = A.orientation.asArray;
+    const float* o2 = B.orientation.asArray;
+    // sat
+    vec3 test[15] = {
+        vec3(o1[0], o1[1], o1[2]),
+        vec3(o1[3], o1[4], o1[5]),
+        vec3(o1[6], o1[7], o1[8]),
+        vec3(o2[0], o2[1], o2[2]),
+        vec3(o2[3], o2[4], o2[5]),
+        vec3(o2[6], o2[7], o2[8])
+    };
+    for (int i = 0; i < 3; ++i) {
+        test[6 + i * 3 + 0] = Cross(test[i], test[0]);
+        test[6 + i * 3 + 1] = Cross(test[i], test[1]);
+        test[6 + i * 3 + 2] = Cross(test[i], test[2]); 
+    }
+    vec3* hitNormal = 0;
+    bool shouldFlip;
+    // test all axes of potential separation.
+    for (int i = 0; i < 15; ++i) {
+        if (MagnitudeSq(test[i]) < 0.001f) {
+            continue;
+        }
+        float depth = PenetrationDepth(A, B, test[i], &shouldFlip);
+        if (depth <= 0.0f) {
+            // no intersection
+            return result;
+        } else if (depth < result.depth) {
+            // record least mount of separation.
+            if (shouldFlip) {
+                test[i] = test[i] * -1.0f;
+            }
+            result.depth = depth;
+            hitNormal = &test[i];
+        }
+    }
+    // no collision
+    if (hitNormal == 0) {
+        return result;
+    }
+    vec3 axis = Normalized(*hitNormal);
+    // clip edges of one obb to the other.
+    std::vector<Point> c1 = ClipEdgesToOBB(GetEdges(B), A);
+    std::vector<Point> c2 = ClipEdgesToOBB(GetEdges(A), B);
+    result.contacts.insert(result.contacts.end(), c1.begin(), c2.begin());
+    result.contacts.insert(result.contacts.end(), c2.begin(), c2.end());
+    // project points onto a shared plane
+    Interval i  = GetInterval(A, axis);
+    float distance = (i.max - i.min) * 0.5f - result.depth * 0.5f;
+    vec3 pointOnPlane = A.position + axis * distance;
+
+    for (int i = result.contacts.size() - 1; i >= 0; --i) {
+        vec3 contact = result.contacts[i];
+        result.contacts[i] = contact + (axis * Dot(axis, pointOnPlane - contact));
+        
+        // remove duplicates
+        for (int j = result.contacts.size() -  1; j > i; --j) {
+            if (MagnitudeSq(result.contacts[j] - result.contacts[i]) < 0.0001f) {
+                result.contacts.erase(result.contacts.begin() + j);
+                break;
+            } 
+        }
+    }
+
+    result.colliding = true;
+    result.normal = axis;
+
+    return result;
+}
