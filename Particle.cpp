@@ -19,6 +19,7 @@ float Particle::GetBounce() {
 }
 
 Particle::Particle() {
+    type = RIGIDBODY_TYPE_PARTICLE;
     friction = 0.95f;
     gravity = vec3(0.0f, -9.82f, 0.0f);
     mass = 1.0f;

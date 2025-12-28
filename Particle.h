@@ -1,7 +1,7 @@
 #ifndef _H_PARTICLE_
 #define _H_PARTICLE_
 
-#include "RigidBody.h"
+#include "Rigidbody.h"
 
 class Particle : public Rigidbody
 {
