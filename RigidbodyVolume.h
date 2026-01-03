@@ -18,6 +18,11 @@ public:
     // volume
     OBB box;
     Sphere sphere;
+    // rotation
+    vec3 orientation;
+    vec3 angVel;
+    // sum of all torques.
+    vec3 torques;
 
     inline RigidbodyVolume() : cor(0.5f), mass(1.0f),
                                friction(0.6f)
@@ -39,6 +44,10 @@ public:
     void SynchCollisionVolumes();
     float InvMass();
     void AddLinearImpulse(const vec3& impulse);
+
+    // rotation
+    mat4 InvTensor();
+    virtual void AddRotationalImpulse(const vec3& point, const vec3& impulse);
 };
 
 
