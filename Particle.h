@@ -22,6 +22,12 @@ public:
     vec3 GetPosition();
     void SetBounce(float b);
     float GetBounce();
+
+    void AddImpulse(const vec3& impulse);
+    float InvMass();
+    void SetMass(float m);
+    vec3 GetVelocity();
+    void SetFriction(float f);
 };
 
 #endif

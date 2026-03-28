@@ -2,6 +2,7 @@
 #define _H_PHYSICS_SYSTEM_
 
 #include "Rigidbody.h"
+#include "Spring.h"
 
 // collection of rigid bodies and constraints.
 class PhysicsSystem
@@ -12,6 +13,7 @@ protected:
     std::vector<Rigidbody*> colliders1;
     std::vector<Rigidbody*> colliders2;
     std::vector<CollisionManifold> results;
+    std::vector<Spring> springs;
 
 public:
     // how much positional correction to apply
@@ -33,6 +35,10 @@ public:
 
     void ClearRigidbodys();
     void ClearConstraints();
+
+    // spring
+    void AddSpring(const Spring& spring);
+    void ClearSprings();
 };
 
 #endif

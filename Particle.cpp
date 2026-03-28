@@ -60,7 +60,7 @@ void Particle::SolveConstraints(const std::vector<OBB>& constraints) {
 
 
 void Particle::ApplyForces() {
-    forces = gravity;
+    forces = gravity * mass;
 }
 
 void Particle::Update(float deltaTime) {
@@ -70,4 +70,35 @@ void Particle::Update(float deltaTime) {
     float deltaSquare = deltaTime * deltaTime;
 
     position = position + (velocity * friction) + (forces * deltaSquare);
+}
+
+void Particle::AddImpulse(const vec3& impulse) {
+    vec3 velocity = position - oldPosition;
+    velocity = velocity + impulse;
+    oldPosition = position - velocity;
+}
+
+float Particle::InvMass() {
+    if (mass == 0.0f) {
+        return 0.0f;
+    }
+    return 1.0f / mass;
+}
+
+void Particle::SetMass(float m) {
+    if (m < 0) {
+        m = 0;
+    }
+    mass = m;
+}
+
+void Particle::SetFriction(float f) {
+    if (f < 0) {
+        f = 0;
+    }
+    friction = f;
+}
+
+vec3 Particle::GetVelocity() {
+    return position - oldPosition;
 }

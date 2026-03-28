@@ -135,8 +135,21 @@ void PhysicsSystem::Update(float deltaTime) {
         m2->SynchCollisionVolumes();
     }
 
+    // apply spring forces
+    for (int i = 0, size = springs.size(); i < size; ++i) {
+        springs[i].ApplyForce(deltaTime);
+    }
+
     // keep rigid bodies from moving through constraints.
     for (int i = 0, size = bodies.size(); i < size; ++i) {
         bodies[i]->SolveConstraints(constraints);
     }
+}
+
+void PhysicsSystem::AddSpring(const Spring& spring) {
+    springs.push_back(spring);
+}
+
+void PhysicsSystem::ClearSprings() {
+    springs.clear();
 }
