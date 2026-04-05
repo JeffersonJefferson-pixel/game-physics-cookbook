@@ -3,6 +3,7 @@
 
 #include "Rigidbody.h"
 #include "Spring.h"
+#include "Cloth.h"
 
 // collection of rigid bodies and constraints.
 class PhysicsSystem
@@ -14,6 +15,7 @@ protected:
     std::vector<Rigidbody*> colliders2;
     std::vector<CollisionManifold> results;
     std::vector<Spring> springs;
+    std::vector<Cloth*> cloths;
 
 public:
     // how much positional correction to apply
@@ -39,6 +41,10 @@ public:
     // spring
     void AddSpring(const Spring& spring);
     void ClearSprings();
+
+    // cloth
+    void AddCloth(Cloth* cloth);
+    void ClearCloths();
 };
 
 #endif

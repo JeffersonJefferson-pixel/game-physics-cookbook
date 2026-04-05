@@ -62,6 +62,11 @@ void PhysicsSystem::Render() {
     for (int i = 0; i < constraints.size(); ++i) {
         ::Render(constraints[i]);
     }
+
+    // render clothes
+    for (int i = 0; i < cloths.size(); ++i) {
+        cloths[i]->Render();
+    }
 }
 
 void PhysicsSystem::Update(float deltaTime) {
@@ -96,6 +101,11 @@ void PhysicsSystem::Update(float deltaTime) {
         bodies[i]->ApplyForces();
     }
 
+    // apply forces on clothes
+    for (int i = 0; i < cloths.size(); ++i) {
+        cloths[i]->ApplyForces();
+    }
+
     // apply impulse
     for (int k = 0; k < ImpluseIteration; ++k) {
         for (int i = 0; i < results.size(); ++i) {
@@ -113,6 +123,11 @@ void PhysicsSystem::Update(float deltaTime) {
     // update rigid bodies position
     for (int i = 0, size = bodies.size(); i < size; ++i) {
         bodies[i]->Update(deltaTime);
+    }
+
+    // integrate clothes
+    for (int i = 0; i < cloths.size(); ++i) {
+        cloths[i]->Update(deltaTime);
     }
 
     // linear projection to fix sinking issues
@@ -140,6 +155,11 @@ void PhysicsSystem::Update(float deltaTime) {
         springs[i].ApplyForce(deltaTime);
     }
 
+    // apply spring forces on clothes
+    for (int i = 0; i < cloths.size(); ++i) {
+        cloths[i]->ApplySpringForces(deltaTime);
+    }
+
     // keep rigid bodies from moving through constraints.
     for (int i = 0, size = bodies.size(); i < size; ++i) {
         bodies[i]->SolveConstraints(constraints);
@@ -152,4 +172,12 @@ void PhysicsSystem::AddSpring(const Spring& spring) {
 
 void PhysicsSystem::ClearSprings() {
     springs.clear();
+}
+
+void PhysicsSystem::AddCloth(Cloth* cloth) {
+    cloths.push_back(cloth);
+}
+
+void PhysicsSystem::ClearCloths() {
+    cloths.clear();
 }
