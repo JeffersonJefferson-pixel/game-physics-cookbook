@@ -1,4 +1,4 @@
-#include "PhysicSystem.h"
+#include "PhysicsSystem.h"
 #include "RigidbodyVolume.h"
 #include "FixedFunctionPrimitives.h"
 #include "glad/glad.h"

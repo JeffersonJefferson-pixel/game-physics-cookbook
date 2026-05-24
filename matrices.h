@@ -128,6 +128,9 @@ typedef struct mat4
     }
 } mat4;
 
+mat3 FastInverse(const mat3& mat);
+mat4 FastInverse(const mat4& mat);
+
 void Transpose(const float *srcMat, float *dstMat, int srcRows, int srcCols);
 mat2 Transpose(const mat2 &matrix);
 mat3 Transpose(const mat3 &matrix);

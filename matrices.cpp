@@ -517,6 +517,28 @@ vec3 MultiplyVector(const vec3& vec, const mat3& mat) {
     result;
 }
 
+mat3 FastInverse(const mat3& mat) {
+    return Transpose(mat);
+}
+
+mat4 FastInverse(const mat4& mat) {
+    mat4 inverse = Transpose(mat);
+    inverse._41 = inverse._14 = 0.0f;
+    inverse._42 = inverse._24 = 0.0f;
+    inverse._43 = inverse._34 = 0.0f;
+
+    vec3 right = vec3(mat._11, mat._12, mat._13);
+    vec3 up = vec3(mat._21, mat._22, mat._23);
+    vec3 forward = vec3(mat._31, mat._32, mat._33);
+    vec3 position = vec3(mat._41, mat._42, mat._43);
+
+    inverse._41 = -Dot(right, position);
+    inverse._42 = -Dot(up, position);
+    inverse._43 = -Dot(forward, position);
+
+    return inverse;
+}
+
 mat4 Transform(const vec3& scale, const vec3& eulerRotation, const vec3& translate) {
     return Scale(scale) * Rotation(eulerRotation.x, eulerRotation.y, eulerRotation.z) * Translation(translate);
 }

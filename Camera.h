@@ -72,6 +72,10 @@ public:
     void Pan(const vec2& deltaPan, float deltaTime);
     
     void Update(float dt);
+
+    void SetTarget(const vec3& newTarget);
+    void SetZoom(float zoom);
+    void SetRotation(const vec2& rotation);
 };
 
 #endif

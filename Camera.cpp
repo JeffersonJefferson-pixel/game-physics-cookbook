@@ -182,6 +182,15 @@ void OrbitCamera::Pan(const vec2& deltaPan, float deltaTime) {
     // pan on the y axis in global space.
     float yPanMag = deltaPan.y * panSpeed.y * deltaTime;
     target = target + (vec3(0, 1, 0) * yPanMag);
+
+    // reset zoom
+    float midZoom = zoomDistanceLimit.x + (zoomDistanceLimit.y - zoomDistanceLimit.x) * 0.5f;
+	zoomDistance = midZoom - zoomDistance;
+	vec3 rotation = vec3(currentRotation.y, currentRotation.x, 0);
+	mat3 orient = Rotation3x3(rotation.x, rotation.y, rotation.z);
+	vec3 dir = MultiplyVector( vec3(0.0, 0.0, -zoomDistance), orient);
+	target = target - dir;
+	zoomDistance = midZoom;
 }
 
 void OrbitCamera::Update(float dt) {
@@ -190,7 +199,7 @@ void OrbitCamera::Update(float dt) {
     vec3 direction = MultiplyVector(vec3(0.0, 0.0, -zoomDistance), orient);
     vec3 position = direction + target;
     // world matrix inverse from view matrix
-    m_matWorld = Inverse(LookAt(position, target, vec3(0, 1 ,0)));
+    m_matWorld = FastInverse(LookAt(position, target, vec3(0, 1 ,0)));
 }
 
 float OrbitCamera::ClampAngle(float angle, float min, float max) {
@@ -241,4 +250,16 @@ Frustum Camera::GetFrustum() {
     }
     
     return result;
+}
+
+void OrbitCamera::SetTarget(const vec3& newTarget) {
+    target = newTarget;
+}
+
+void OrbitCamera::SetZoom(float zoom) {
+    zoomDistance = zoom;
+}
+
+void OrbitCamera::SetRotation(const vec2& rotation) {
+    currentRotation = rotation;
 }
