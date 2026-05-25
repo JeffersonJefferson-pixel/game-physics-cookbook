@@ -174,6 +174,9 @@ mat4 Inverse(const mat4& mat);
 mat4 Translation(float x, float y, float z);
 // get translation matrix given translation vector.
 mat4 Translation(const vec3& pos);
+
+mat4 FromMat3(const mat3& mat);
+
 // get translation vector from transformation matrix.
 vec3 GetTranslation(const mat4& mat);
 
