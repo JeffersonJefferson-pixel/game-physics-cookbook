@@ -27,7 +27,7 @@ public:
     virtual void OnRender();
     virtual void OnResize(int width, int height);
     virtual void OnInitialize();
-    virtual void OnFixedUpdate();
+    virtual void OnFixedUpdate(float deltaTime  );
     virtual void OnUpdate(float deltaTime);
     virtual void OnShutdown();
     

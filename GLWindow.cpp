@@ -10,6 +10,11 @@
 #define Clamp01(x) \
     (x < 0.0f ? 0.0f : (x > 1.0f ? 1.0f : x))
 
+#define Bit(number) (1 << number)
+#define BitValue(variable, bitmask) (variable &bitMask)
+#define BitOn(variable, bitmask) variable |= bitmask
+#define BitOff(variable, bitmask) variable &= ~bitmask
+
 GLWindow::GLWindow(const char* title, int width, int height) : IWindow(title, width, height) {
     mouseButtonState = 0;
     memset(keyboardState, false, sizeof(bool) * 256);
@@ -38,4 +43,22 @@ void GLWindow::OnRender() {
 
 void GLWindow::OnResize(int width, int height) {
     glViewport(0, 0, width, height);
+}
+
+
+void GLWindow::OnMouseDown(int mouseCode) {
+    BitOn(mouseButtonState, Bit(mouseCode));
+}
+
+
+vec2 GLWindow::GetMousePosition() {
+    return m_vecMousePos;
+}
+
+void GLWindow::OnMouseButtonDown(int button) {
+    if (button <= 0 || button >= 4) {
+        return false;
+    }
+
+    return BitValue(mouseButtonState, Bit(button));
 }
