@@ -33,8 +33,6 @@ public:
     
     void StopDemo();
     void Start14();
-    void Start15();
-    void Start16();
 };
 
 #endif

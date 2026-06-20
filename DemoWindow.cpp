@@ -119,6 +119,10 @@ void DemoWindow::OnFixedUpdate(float deltaTime) {
     m_prevMousePos = mousePos;
 }
 
+void DemoWindow::OnShutdown() {
+    GLWindow::OnShutdown();
+    StopDemo();
+}
 
 void DemoWindow::StopDemo() {
     if (m_pDemo != 0) {

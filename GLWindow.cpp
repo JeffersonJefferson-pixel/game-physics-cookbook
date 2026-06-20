@@ -11,7 +11,7 @@
     (x < 0.0f ? 0.0f : (x > 1.0f ? 1.0f : x))
 
 #define Bit(number) (1 << number)
-#define BitValue(variable, bitmask) (variable &bitMask)
+#define BitValue(variable, bitmask) (variable & bitmask)
 #define BitOn(variable, bitmask) variable |= bitmask
 #define BitOff(variable, bitmask) variable &= ~bitmask
 
@@ -45,20 +45,58 @@ void GLWindow::OnResize(int width, int height) {
     glViewport(0, 0, width, height);
 }
 
+void GLWindow::OnMouseMove(int x, int y) {
+    m_vecMousePos.x = x;
+    m_vecMousePos.y = y;
+}
 
 void GLWindow::OnMouseDown(int mouseCode) {
     BitOn(mouseButtonState, Bit(mouseCode));
 }
 
+void GLWindow::OnMouseUp(int mouseCode) {
+    BitOff(mouseButtonState, Bit(mouseCode));
+}
+
+
+void GLWindow::OnMouseDown(int mouseCode) {
+    BitOn(mouseButtonState, Bit(mouseCode));
+}
+
+void GLWindow::OnKeyDown(int keyCode) {
+    keyboardState[KeyIndex(keyCode)] = true;
+}
+
+void GLWindow::OnKeyUp(int keyCode) {
+    keyboardState[KeyIndex(keyCode)] = false;
+}
 
 vec2 GLWindow::GetMousePosition() {
     return m_vecMousePos;
 }
 
-void GLWindow::OnMouseButtonDown(int button) {
+bool GLWindow::MouseButtonDown(int button) {
     if (button <= 0 || button >= 4) {
         return false;
     }
 
     return BitValue(mouseButtonState, Bit(button));
+}
+
+bool GLWindow::KeyDown(int keyCode) {
+    keyCode = KeyIndex(keyCode);
+    if (keyCode < 0 || keyCode >= 256) {
+        return false;
+    }
+    return keyboardState[keyCode];
+}
+
+void GLWindow::SetGLProjection(float* projectionArray) {
+    glMatrixMode(GL_PROJECTION);
+    glLoadMatrixf(projectionArray);
+}
+
+void GLWindow::SetGLModelView(float* mvArray) {
+    glMatrixMode(GL_MODELVIEW);
+    glLoadMatrixf(mvArray);
 }
