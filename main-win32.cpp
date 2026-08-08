@@ -150,7 +150,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR szCmdLine
     std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << "\n";
     std::cout << "GLSL Version: " < glGetString(GL_SHADING_LANGUAGE_VERSION) << "\n";
 
-    ImGui_Implemntation_Init(hwnd);
+    ImGui_Implementation_Init(hwnd);
     pWindowInstance->OnInitialize();
 
     bool fullscreen = pWindowInstance->GetFullScreen();
@@ -266,7 +266,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
     ImGui_Implementation_WndProcHandler(hwnd, iMsg, wParam, lParam);
 
-    iWindow *pWindowInstance = IWindow::GetInstance();
+    IWindow* pWindowInstance = IWindow::GetInstance();
     int width, height;
 
     static bool shiftDown = false;
