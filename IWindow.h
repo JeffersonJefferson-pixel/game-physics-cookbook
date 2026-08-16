@@ -39,7 +39,7 @@ public:
     }
 
     IWindow();
-    IWindow(const char* titile);
+    IWindow(const char* title);
     IWindow(const char* title, int width, int height);
 
     virtual ~IWindow();
@@ -52,7 +52,7 @@ public:
 
     virtual void OnResize(int width, int height) {}
     
-    virtual void OnMoseMove(int x, int y) {}
+    virtual void OnMouseMove(int x, int y) {}
     virtual void OnMouseDown(int mouseCode) {}
     virtual void OnMouseUp(int mouseCode) {}
 

@@ -17,7 +17,16 @@ void Scene::RemoveModel(Model* model) {
 }
 
 void Scene::UpdateModel(Model* model) {
+    if (model == 0) return;
+    // if model not managed by this scene, ignore
+    if (std::find(objects.begin(), objects.end(), model) == objects.end()) {
+        return;
+    }
 
+    // if an octree is being used, update the model's placement in it
+    if (octree != 0) {
+        ::Update(octree, model);
+    }
 }
 
 std::vector<Model*> Scene::FindChildren(const Model* model) {
@@ -36,6 +45,7 @@ std::vector<Model*> Scene::FindChildren(const Model* model) {
             iterator = iterator->parent;
         }
     }
+    return result;
 }
 
 Model* Scene::Raycast(const Ray& ray) {
@@ -149,15 +159,15 @@ void Insert(OctreeNode* node, Model* model) {
 void Remove(OctreeNode* node, Model* model) {
     // does not check for containment
     if (node->children == 0) {
-        // find model to remove
+        // leaf node: find model to remove
         std::vector<Model*>::iterator it = std::find(node->models.begin(), node->models.end(), model);
         if (it != node->models.end()) {
             node->models.erase(it);
-        } else {
-            // recurse in children.
-            for (int i = 0; i < 8; ++i) {
-                Remove(&(node->children[i]), model);
-            }
+        }
+    } else {
+        // recurse in children.
+        for (int i = 0; i < 8; ++i) {
+            Remove(&(node->children[i]), model);
         }
     }
 }
@@ -191,7 +201,9 @@ Model* FindClosest(const std::vector<Model*>& set, const Ray& ray) {
 
 Model* Raycast(OctreeNode* node, const Ray& ray) {
     // check intersection of ray and node bound
-    float t = Raycast(node->bounds, ray);
+    RaycastResult raycast;
+    Raycast(node->bounds, ray, &raycast);
+    float t = raycast.t;
     if (t >= 0) {
         if (node->children == 0) {
             // find closest among models in the leaf node.
@@ -236,6 +248,7 @@ std::vector<Model*> Query(OctreeNode* node, const Sphere& sphere) {
             }
         }
     }
+    return result;
 }
 
 std::vector<Model*> Query(OctreeNode* node, const AABB& aabb) {
@@ -250,13 +263,13 @@ std::vector<Model*> Query(OctreeNode* node, const AABB& aabb) {
                     result.push_back(node->models[i]);
                 }
             }
-        }
-    } else {
-        // recursively query children node
-        for (int i = 0; i < 8; ++i) {
-            std::vector<Model*> child = Query(&(node->children[i]), aabb);
-            if (child.size() > 0) {
-                result.insert(result.end(), child.begin(), child.end());
+        } else {
+            // recursively query children node
+            for (int i = 0; i < 8; ++i) {
+                std::vector<Model*> child = Query(&(node->children[i]), aabb);
+                if (child.size() > 0) {
+                    result.insert(result.end(), child.begin(), child.end());
+                }
             }
         }
     }

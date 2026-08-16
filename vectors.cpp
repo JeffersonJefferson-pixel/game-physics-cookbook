@@ -19,10 +19,6 @@ vec3 operator-(const vec3& l, const vec3& r) {
     return { l.x - r.x, l.y - r.y, l.z - r.z };
 }
 
-vec3 operator-(const vec3& l, const vec3& r) {
-    return { l.x - r.x, l.y - r.y, l.z - r.z };
-}
-
 vec2 operator*(const vec2& l, const vec2& r) {
     return { l.x * r.x, l.y * r.y };
 }
@@ -84,7 +80,7 @@ float Distance(const vec3& p1, const vec3& p2) {
     return Magnitude(t);
 }
 
-void Normalzie(vec2& v) {
+void Normalize(vec2& v) {
     v = v * (1.0f / Magnitude(v));
 };
 void Normalize(vec3& v) {

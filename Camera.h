@@ -1,5 +1,5 @@
 #ifndef _H_CAMERA_
-#define H_CAMERA_
+#define _H_CAMERA_
 #include "matrices.h"
 #include "Geometry3D.h"
 

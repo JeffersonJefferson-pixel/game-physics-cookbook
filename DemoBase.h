@@ -7,7 +7,7 @@ class DemoBase {
 private:
     // disable
     DemoBase(const DemoBase&);
-    DemoBase& operator=(const DemoBase);
+    DemoBase& operator=(const DemoBase&);
 protected:
     bool show_help;
     bool mouseLeftDown;
